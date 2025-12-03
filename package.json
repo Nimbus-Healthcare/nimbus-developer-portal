@@ -21,7 +21,8 @@
   "author": "Nimbus Healthcare",
   "license": "PROPRIETARY",
   "dependencies": {
-    "@redocly/cli": "^1.10.0"
+    "@redocly/cli": "^1.10.0",
+    "@redocly/realm": "^0.127.0"
   },
   "engines": {
     "node": ">=18.0.0"
