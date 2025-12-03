@@ -20,7 +20,10 @@
   ],
   "author": "Nimbus Healthcare",
   "license": "PROPRIETARY",
-  "devDependencies": {
+  "dependencies": {
     "@redocly/cli": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
