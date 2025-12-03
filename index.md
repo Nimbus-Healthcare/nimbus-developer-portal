@@ -41,25 +41,19 @@ curl https://api-sandbox.nimbus-os.com/orders \
 
 ## Quick Links
 
-<div class="card-grid">
-  <div class="card">
-    <h3>Quickstart</h3>
-    <p>Get your first API call working in minutes.</p>
-    <a href="/guides/quickstart">View guide →</a>
-  </div>
+{% cards %}
+  {% card title="Quickstart" to="/guides/quickstart" %}
+    Get your first API call working in minutes.
+  {% /card %}
   
-  <div class="card">
-    <h3>API Reference</h3>
-    <p>Complete endpoint documentation with examples.</p>
-    <a href="/api-reference">View reference →</a>
-  </div>
+  {% card title="API Reference" to="/api-reference" %}
+    Complete endpoint documentation with examples.
+  {% /card %}
   
-  <div class="card">
-    <h3>Webhooks</h3>
-    <p>Receive real-time event notifications.</p>
-    <a href="/guides/webhooks">Learn more →</a>
-  </div>
-</div>
+  {% card title="Webhooks" to="/guides/webhooks" %}
+    Receive real-time event notifications.
+  {% /card %}
+{% /cards %}
 
 ## What You Can Build
 
@@ -86,7 +80,3 @@ curl https://api-sandbox.nimbus-os.com/orders \
 ---
 
 Need help? Contact [api@nimbus-os.com](mailto:api@nimbus-os.com)
-
-
-
-# Trigger deployment

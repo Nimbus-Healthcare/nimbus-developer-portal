@@ -1,13 +1,10 @@
 # Redocly Realm Configuration for Nimbus OS Developer Portal
-
-# Disable telemetry to avoid OpenTelemetry compatibility issues
-telemetry: optOut
+# NOTE: Set REDOCLY_TELEMETRY=off as environment variable in Redocly Cloud settings
 
 apis:
   main:
     root: ./openapi.yaml
 
-# Top navigation bar configuration (optional - sidebar uses sidebars.yaml)
 navbar:
   items:
     - page: index.md
@@ -17,7 +14,6 @@ navbar:
     - page: api-reference.md
       label: API Reference
 
-# Footer configuration
 footer:
   copyrightText: "© 2025 Nimbus Healthcare. All rights reserved."
   items:
@@ -42,12 +38,6 @@ footer:
           label: Legal Inquiries
           external: true
 
-# SEO configuration
 seo:
   title: Nimbus OS Developer Portal
   description: API documentation and guides for integrating with Nimbus OS
-
-# Logo configuration
-logo:
-  image: ../NB_br_Logo Black/NB_br_Logo Black_0325.png
-  link: /
