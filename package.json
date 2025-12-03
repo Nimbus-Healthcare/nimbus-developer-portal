@@ -22,7 +22,7 @@
   "license": "PROPRIETARY",
   "dependencies": {
     "@redocly/cli": "^1.10.0",
-    "@redocly/realm": "^0.127.0"
+    "@redocly/realm": "^0.128.0-next.7"
   },
   "engines": {
     "node": ">=18.0.0"
