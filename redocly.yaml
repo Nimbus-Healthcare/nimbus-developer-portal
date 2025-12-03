@@ -1,4 +1,8 @@
 # Redocly Realm Configuration for Nimbus OS Developer Portal
+
+# Disable telemetry to avoid OpenTelemetry compatibility issues
+telemetry: optOut
+
 apis:
   main:
     root: ./openapi.yaml
