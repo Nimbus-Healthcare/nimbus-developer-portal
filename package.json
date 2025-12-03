@@ -22,14 +22,7 @@
   "license": "PROPRIETARY",
   "dependencies": {
     "@redocly/cli": "^1.10.0",
-    "@redocly/realm": "^0.128.0-next.7",
-    "@opentelemetry/resources": "^2.0.0",
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/sdk-trace-node": "^2.0.0"
-  },
-  "overrides": {
-    "@opentelemetry/resources": "^2.0.0",
-    "@opentelemetry/sdk-trace-node": "^2.0.0"
+    "@redocly/realm": "0.125.3"
   },
   "engines": {
     "node": ">=18.0.0"
