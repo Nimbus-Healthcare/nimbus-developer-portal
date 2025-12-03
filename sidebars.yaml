@@ -22,9 +22,6 @@
       label: Environments
 - page: api-reference.md
   label: API Reference
-- group: Nimbus OS API
-  items:
-    - page: ./openapi.yaml
 - page: changelog.md
   label: Changelog
 - page: api-terms.md
