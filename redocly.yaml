@@ -3,37 +3,15 @@ apis:
   main:
     root: ./openapi.yaml
 
-# Navigation configuration
+# Top navigation bar configuration (optional - sidebar uses sidebars.yaml)
 navbar:
   items:
     - page: index.md
       label: Home
-    - page: guides/overview.md
-      label: Overview
     - page: guides/quickstart.md
       label: Quickstart
-    - page: guides/authentication.md
-      label: Authentication
-    - group: Guides
-      items:
-        - page: guides/orders.md
-          label: Orders
-        - page: guides/refills.md
-          label: Refills
-        - page: guides/tracking.md
-          label: Tracking
-        - page: guides/webhooks.md
-          label: Webhooks
-        - page: guides/errors-idempotency.md
-          label: Errors & Idempotency
-        - page: guides/environments.md
-          label: Environments
     - page: api-reference.md
       label: API Reference
-    - page: changelog.md
-      label: Changelog
-    - page: api-terms.md
-      label: Terms
 
 # Footer configuration
 footer:
