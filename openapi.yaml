@@ -1,0 +1,547 @@
+openapi: 3.1.0
+
+info:
+  title: Nimbus OS API
+  version: 1.0.0
+  description: |
+    The Nimbus OS API enables programmatic access to pharmacy operations, order management, and patient care workflows.
+    
+    **Approved Partners Only**: API access is limited to Approved Partners with written approval. By using this API, you agree to the [API License Terms & Conditions](https://developer.nimbus-os.com/api-terms).
+    
+    ## Authentication
+    
+    All API requests require authentication via an API key sent in the `X-API-Key` header.
+    
+    ## Base URLs
+    
+    - **Sandbox**: `https://api-sandbox.nimbus-os.com`
+    - **Production**: `https://api.nimbus-os.com`
+    
+    ## HIPAA & PHI
+    
+    This API handles Protected Health Information (PHI) and is designed to comply with HIPAA requirements. Production access involving PHI requires a Business Associate Agreement (BAA). Do not send PHI to Sandbox. Ensure proper security measures are in place when handling API responses.
+    
+  contact:
+    name: Nimbus OS API Support
+    email: api@nimbus-os.com
+  license:
+    name: API License Terms & Conditions
+    url: https://developer.nimbus-os.com/api-terms
+
+servers:
+  - url: https://api-sandbox.nimbus-os.com
+    description: Sandbox environment
+  - url: https://api.nimbus-os.com
+    description: Production environment
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Orders
+    description: Create and manage pharmacy orders
+  - name: Refills
+    description: Manage prescription refills
+  - name: Webhooks
+    description: Test and manage webhook delivery
+
+paths:
+  /orders:
+    post:
+      operationId: createOrder
+      summary: Create a new order
+      description: |
+        Creates a new pharmacy order. Use an idempotency key to ensure safe retries.
+        
+        **Idempotency**: Include an `Idempotency-Key` header to prevent duplicate orders if a request is retried.
+      tags:
+        - Orders
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            examples:
+              basic:
+                summary: Basic order
+                value:
+                  patientId: "pat_1234567890"
+                  prescriptionId: "rx_9876543210"
+                  shippingAddress:
+                    street1: "123 Main St"
+                    city: "Austin"
+                    state: "TX"
+                    zip: "78701"
+                    country: "US"
+      responses:
+        '201':
+          description: Order created successfully
+          headers:
+            Location:
+              description: URL of the created order
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Order already exists (idempotency key conflict)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: "idempotency_key_conflict"
+                  message: "An order with this idempotency key already exists"
+                  requestId: "req_abc123"
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      summary: Retrieve an order
+      description: Retrieve details of a specific order by ID.
+      tags:
+        - Orders
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: The unique identifier for the order
+          schema:
+            type: string
+            pattern: '^ord_[a-zA-Z0-9]+$'
+            example: "ord_1234567890"
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /refills:
+    post:
+      operationId: createRefill
+      summary: Create a refill request
+      description: |
+        Initiates a refill request for an existing prescription. The system will check eligibility and process accordingly.
+      tags:
+        - Refills
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRefillRequest'
+            example:
+              prescriptionId: "rx_9876543210"
+              patientId: "pat_1234567890"
+              requestedQuantity: 30
+      responses:
+        '201':
+          description: Refill request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refill'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /webhooks/test:
+    post:
+      operationId: testWebhook
+      summary: Test webhook delivery
+      description: |
+        Sends a test webhook event to your configured webhook endpoint. Useful for verifying webhook setup and debugging.
+      tags:
+        - Webhooks
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eventType:
+                  type: string
+                  enum: [order.created, order.fulfilled, refill.ready]
+                  default: order.created
+                webhookUrl:
+                  type: string
+                  format: uri
+                  description: Override the default webhook URL for this test
+      responses:
+        '200':
+          description: Test webhook sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  webhookId:
+                    type: string
+              example:
+                success: true
+                message: "Test webhook sent"
+                webhookId: "wh_test_1234567890"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Your API key. Get one from the developer portal.
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        A unique key for ensuring idempotency. If provided, duplicate requests with the same key will return the original response.
+        Recommended for POST requests that create resources.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        example: "idemp_abc123xyz"
+
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required:
+        - patientId
+        - prescriptionId
+        - shippingAddress
+      properties:
+        patientId:
+          type: string
+          pattern: '^pat_[a-zA-Z0-9]+$'
+          description: Unique identifier for the patient
+          example: "pat_1234567890"
+        prescriptionId:
+          type: string
+          pattern: '^rx_[a-zA-Z0-9]+$'
+          description: Unique identifier for the prescription
+          example: "rx_9876543210"
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        notes:
+          type: string
+          maxLength: 1000
+          description: Optional notes for the order
+          example: "Please leave at front door"
+
+    CreateRefillRequest:
+      type: object
+      required:
+        - prescriptionId
+        - patientId
+      properties:
+        prescriptionId:
+          type: string
+          pattern: '^rx_[a-zA-Z0-9]+$'
+          description: Unique identifier for the prescription to refill
+          example: "rx_9876543210"
+        patientId:
+          type: string
+          pattern: '^pat_[a-zA-Z0-9]+$'
+          description: Unique identifier for the patient
+          example: "pat_1234567890"
+        requestedQuantity:
+          type: integer
+          minimum: 1
+          description: Requested quantity (defaults to original prescription quantity)
+          example: 30
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^ord_[a-zA-Z0-9]+$'
+          description: Unique order identifier
+          example: "ord_1234567890"
+        patientId:
+          type: string
+          example: "pat_1234567890"
+        prescriptionId:
+          type: string
+          example: "rx_9876543210"
+        status:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+          example: "processing"
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        trackingNumber:
+          type: string
+          nullable: true
+          description: Carrier tracking number (available after shipment)
+          example: "1Z999AA10123456784"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-15T14:22:00Z"
+        estimatedDeliveryDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2025-01-18"
+
+    Refill:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^ref_[a-zA-Z0-9]+$'
+          example: "ref_1234567890"
+        prescriptionId:
+          type: string
+          example: "rx_9876543210"
+        patientId:
+          type: string
+          example: "pat_1234567890"
+        status:
+          type: string
+          enum: [pending, approved, processing, shipped, cancelled]
+          example: "approved"
+        requestedQuantity:
+          type: integer
+          example: 30
+        approvedQuantity:
+          type: integer
+          nullable: true
+          example: 30
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+        estimatedShipDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2025-01-18"
+
+    Address:
+      type: object
+      required:
+        - street1
+        - city
+        - state
+        - zip
+        - country
+      properties:
+        street1:
+          type: string
+          example: "123 Main St"
+        street2:
+          type: string
+          nullable: true
+          example: "Apt 4B"
+        city:
+          type: string
+          example: "Austin"
+        state:
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: '^[A-Z]{2}$'
+          example: "TX"
+        zip:
+          type: string
+          pattern: '^\d{5}(-\d{4})?$'
+          example: "78701"
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: '^[A-Z]{2}$'
+          default: "US"
+          example: "US"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+            - requestId
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: "validation_error"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "The request body is invalid"
+            requestId:
+              type: string
+              description: Unique identifier for this request (useful for support)
+              example: "req_abc123xyz"
+            details:
+              type: object
+              description: Additional error details (structure varies by error type)
+              additionalProperties: true
+
+    WebhookEvent:
+      type: object
+      description: Base structure for webhook events
+      required:
+        - id
+        - type
+        - createdAt
+        - data
+      properties:
+        id:
+          type: string
+          description: Unique webhook event identifier
+          example: "evt_1234567890"
+        type:
+          type: string
+          enum: [order.created, order.fulfilled, refill.ready]
+          description: Event type
+          example: "order.created"
+        createdAt:
+          type: string
+          format: date-time
+          description: When the event occurred
+          example: "2025-01-15T10:30:00Z"
+        data:
+          type: object
+          description: Event-specific payload
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "invalid_request"
+              message: "The request is invalid"
+              requestId: "req_abc123"
+
+    ValidationError:
+      description: Validation error - request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "validation_error"
+              message: "The request body is invalid"
+              requestId: "req_abc123"
+              details:
+                field: "shippingAddress.zip"
+                reason: "Invalid ZIP code format"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "not_found"
+              message: "The requested resource was not found"
+              requestId: "req_abc123"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "internal_error"
+              message: "An internal error occurred"
+              requestId: "req_abc123"
+
+  examples:
+    OrderCreatedWebhook:
+      summary: Order created webhook event
+      value:
+        id: "evt_1234567890"
+        type: "order.created"
+        createdAt: "2025-01-15T10:30:00Z"
+        data:
+          orderId: "ord_1234567890"
+          patientId: "pat_1234567890"
+          status: "pending"
+
+    OrderFulfilledWebhook:
+      summary: Order fulfilled webhook event
+      value:
+        id: "evt_1234567891"
+        type: "order.fulfilled"
+        createdAt: "2025-01-15T14:22:00Z"
+        data:
+          orderId: "ord_1234567890"
+          trackingNumber: "1Z999AA10123456784"
+          estimatedDeliveryDate: "2025-01-18"
+
+    RefillReadyWebhook:
+      summary: Refill ready webhook event
+      value:
+        id: "evt_1234567892"
+        type: "refill.ready"
+        createdAt: "2025-01-15T10:30:00Z"
+        data:
+          refillId: "ref_1234567890"
+          prescriptionId: "rx_9876543210"
+          status: "approved"
