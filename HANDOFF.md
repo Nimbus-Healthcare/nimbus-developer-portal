@@ -281,7 +281,7 @@ If navigation doesn't work:
 - [Redocly Documentation](https://redocly.com/docs)
 - [OpenAPI Specification](https://spec.openapis.org/oas/v3.1.0)
 - [Redocly CLI Reference](https://redocly.com/docs/cli)
-- [Nimbus OS Brand Guidelines](../NIMBUS-OS-BRAND-GUIDELINES-2025-11-24.md)
+- [Nimbus OS Brand Guidelines](https://nimbushealthcare.com/brand)
 
 ## Support
 

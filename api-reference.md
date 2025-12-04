@@ -7,4 +7,4 @@ description: Complete API endpoint documentation
 
 Complete reference documentation for all Nimbus OS API endpoints.
 
-{% OpenApi api="main" %}
+{% openapi file="./openapi.yaml" /%}
