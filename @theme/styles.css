@@ -1,0 +1,29 @@
+/* Nimbus OS Brand Theme for Redocly Realm */
+/* Using CSS variables to customize colors */
+
+:root {
+  /* Nimbus Brand Colors */
+  --color-primary: #0ED2C3;           /* Nimbus OS Teal */
+  --color-primary-hover: #0bb8a8;     /* Darker teal for hover */
+  --color-success: #2FFFC7;          /* Signal Green */
+  --color-warning: #FFA726;          /* Warning orange */
+  --color-error: #FF4F7B;             /* Crimson */
+  
+  /* Link colors */
+  --link-text-color: #0ED2C3;         /* Teal for links */
+  --link-text-color-hover: #0bb8a8;   /* Darker teal on hover */
+  
+  /* Typography */
+  --h1-text-color: #111827;           /* Dark text for headings */
+  --text-color: #374151;              /* Body text */
+}
+
+/* Dark mode support */
+:root.dark {
+  --color-primary: #0ED2C3;           /* Keep teal bright in dark mode */
+  --color-primary-hover: #2FFFC7;     /* Signal green on hover */
+  --link-text-color: #0ED2C3;
+  --link-text-color-hover: #2FFFC7;
+  --h1-text-color: #E6E9F0;           /* Light text for headings */
+  --text-color: #9DA9B8;              /* Muted text */
+}
