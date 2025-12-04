@@ -8,6 +8,7 @@ apis:
 logo:
   image: ./assets/logo.png
   altText: Nimbus OS Logo
+  favicon: ./assets/favicon/NIMBUS_favicon.ico
 
 # Navigation configuration
 navbar:
@@ -44,6 +45,35 @@ navbar:
 # Footer configuration
 footer:
   copyrightText: "© 2025 Nimbus Healthcare. All rights reserved."
+  items:
+    - group: Documentation
+      items:
+        - page: guides/overview.md
+          label: Overview
+        - page: guides/quickstart.md
+          label: Quickstart
+        - page: api-reference.md
+          label: API Reference
+    - group: Resources
+      items:
+        - page: changelog.md
+          label: Changelog
+        - page: api-terms.md
+          label: API Terms
+        - href: https://redocly.com/docs
+          label: Redocly Docs
+          external: true
+    - group: Support
+      items:
+        - href: mailto:api@nimbus-os.com
+          label: API Support
+          external: true
+        - href: mailto:legal@nimbushealthcare.com
+          label: Legal Inquiries
+          external: true
+        - href: https://redocly.com/support
+          label: Redocly Support
+          external: true
 
 # SEO configuration
 seo:

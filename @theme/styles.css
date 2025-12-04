@@ -15,9 +15,22 @@
   --color-warning: #FFA726 !important;           /* Warning orange */
   --color-error: #FF4F7B !important;             /* Crimson */
   
+  /* Layout colors */
+  --navbar-bg-color: #ffffff !important;         /* Navbar background */
+  --sidebar-background-color: #f8fafc !important; /* Sidebar background */
+  --content-background-color: #ffffff !important;  /* Content background */
+  
+  /* Border colors */
+  --border-color: #e5e7eb !important;            /* Border color */
+  
   /* Typography */
   --h1-text-color: #111827 !important;           /* Dark text for headings */
   --text-color: #374151 !important;              /* Body text */
+  
+  /* Button colors */
+  --button-primary-bg: #0ED2C3 !important;       /* Primary button background */
+  --button-primary-text: #ffffff !important;     /* Primary button text */
+  --button-primary-hover: #0bb8a8 !important;    /* Primary button hover */
 }
 
 /* Dark mode support */
@@ -26,8 +39,21 @@
   --color-primary-hover: #2FFFC7 !important;     /* Signal green on hover */
   --link-text-color: #0ED2C3 !important;
   --link-text-color-hover: #2FFFC7 !important;
+  
+  /* Layout colors for dark mode */
+  --navbar-bg-color: #0f172a !important;         /* Dark navbar */
+  --sidebar-background-color: #1e293b !important; /* Dark sidebar */
+  --content-background-color: #0f172a !important; /* Dark content */
+  --border-color: #374151 !important;             /* Dark border */
+  
+  /* Typography for dark mode */
   --h1-text-color: #E6E9F0 !important;           /* Light text for headings */
   --text-color: #9DA9B8 !important;              /* Muted text */
+  
+  /* Button colors for dark mode */
+  --button-primary-bg: #0ED2C3 !important;
+  --button-primary-text: #0f172a !important;     /* Dark text on teal */
+  --button-primary-hover: #2FFFC7 !important;
 }
 
 /* Additional specific overrides for links */
@@ -43,13 +69,37 @@ a:hover {
 button[class*="primary"],
 a[class*="primary"],
 [class*="button-primary"] {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+  background-color: var(--button-primary-bg) !important;
+  border-color: var(--button-primary-bg) !important;
+  color: var(--button-primary-text) !important;
 }
 
 button[class*="primary"]:hover,
 a[class*="primary"]:hover,
 [class*="button-primary"]:hover {
-  background-color: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+  background-color: var(--button-primary-hover) !important;
+  border-color: var(--button-primary-hover) !important;
+}
+
+/* Code block styling */
+code,
+pre {
+  background-color: var(--sidebar-background-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Success, warning, error states */
+[class*="success"],
+[class*="alert-success"] {
+  color: var(--color-success) !important;
+}
+
+[class*="warning"],
+[class*="alert-warning"] {
+  color: var(--color-warning) !important;
+}
+
+[class*="error"],
+[class*="alert-error"] {
+  color: var(--color-error) !important;
 }
