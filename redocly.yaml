@@ -2,7 +2,8 @@
 
 apis:
   main:
-    root: ./openapi.yaml
+    root: ./openapi-partner.yaml
+    title: Partner API
 
 # Logo configuration
 logo:
