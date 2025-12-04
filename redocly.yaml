@@ -1,14 +1,8 @@
 # Redocly Realm Configuration for Nimbus OS Developer Portal
-# https://redocly.com/docs/realm/
 
 apis:
   main:
     root: ./openapi.yaml
-
-# Logo configuration
-logo:
-  image: ./assets/logo.png
-  altText: Nimbus OS
 
 # Navigation configuration
 navbar:
@@ -45,43 +39,8 @@ navbar:
 # Footer configuration
 footer:
   copyrightText: "© 2025 Nimbus Healthcare. All rights reserved."
-  items:
-    - group: Documentation
-      items:
-        - page: guides/overview.md
-          label: Overview
-        - page: guides/quickstart.md
-          label: Quickstart
-        - page: api-reference.md
-          label: API Reference
-    - group: Legal
-      items:
-        - page: api-terms.md
-          label: API Terms & Conditions
-    - group: Support
-      items:
-        - href: mailto:api@nimbus-os.com
-          label: API Support
-          external: true
-        - href: mailto:legal@nimbushealthcare.com
-          label: Legal Inquiries
-          external: true
 
 # SEO configuration
 seo:
   title: Nimbus OS Developer Portal
   description: API documentation and guides for integrating with Nimbus OS
-
-# OpenAPI theme configuration
-theme:
-  openapi:
-    generateCodeSamples:
-      languages:
-        - lang: curl
-        - lang: javascript
-        - lang: python
-
-# Linting configuration
-lint:
-  extends:
-    - recommended
