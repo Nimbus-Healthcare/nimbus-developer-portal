@@ -1,14 +1,16 @@
 # Nimbus OS Developer Portal - Engineering Handoff
 
 **Date**: December 2025  
-**Status**: ✅ Infrastructure Complete - Ready for API Population  
+**Status**: ✅ Infrastructure Complete - Partner API Foundation Ready  
 **Live Site**: [nimbus-os.redocly.app](https://nimbus-os.redocly.app)
 
 ---
 
 ## 🎯 Executive Summary
 
-The Nimbus OS Developer Portal infrastructure has been successfully built and deployed. The portal is **production-ready** and waiting for engineering to populate it with actual API specifications. This document outlines what has been built, how it works, and the next steps required to make it fully functional for our partners.
+The Nimbus OS Developer Portal infrastructure has been successfully built and deployed. The portal is **production-ready** with a foundation for partner APIs focused on **pharmacy operations only**. This document outlines what has been built, what's complete, and the next steps required to make it fully functional for our partners.
+
+**Key Clarification**: Partner APIs are **pharmacy-focused only** (webhooks, refills, shipment tracking). Internal APIs (RPA, clinic management, practitioner management) are documented separately in Notion and are NOT exposed to partners.
 
 ---
 
@@ -22,7 +24,16 @@ The Nimbus OS Developer Portal infrastructure has been successfully built and de
 - ✅ **Navigation Structure**: Complete navigation with guides, API reference, and support sections
 - ✅ **Footer**: Documentation links, resources, and support contacts
 
-### 2. **Documentation Framework**
+### 2. **Partner API Foundation** ✅ **COMPLETE**
+- ✅ **Partner OpenAPI Spec**: `openapi-partner.yaml` created and integrated
+  ✅
+- ✅ **Webhook Endpoints**: Documented (`POST /webhook`, `DELETE /webhook/:id`)
+- ✅ **Refill Endpoints**: Documented (`POST /refill-request`)
+- ✅ **Webhook Integration Guide**: Comprehensive guide at `guides/webhooks.md` ✅
+- ✅ **Code Examples**: Node.js, Python, and cURL examples included ✅
+- ✅ **Security Documentation**: API key auth, HTTPS requirements, idempotency ✅
+
+### 3. **Documentation Framework**
 - ✅ **Landing Page**: Professional API overview page
 - ✅ **Guide Templates**: Pre-built guide structure for:
   - Overview
@@ -31,251 +42,232 @@ The Nimbus OS Developer Portal infrastructure has been successfully built and de
   - Orders
   - Refills
   - Tracking
-  - Webhooks
+  - Webhooks ✅ **COMPLETE**
   - Error Handling
   - Environments
 - ✅ **API Terms Page**: Legal terms and conditions page
 - ✅ **Changelog**: Version history template
 
-### 3. **Technical Configuration**
-- ✅ **OpenAPI 3.1 Specification**: Template structure in `openapi.yaml`
+### 4. **Internal API Documentation** ✅ **COMPLETE**
+- ✅ **Notion Documentation**: `INTERNAL-APIS-NOTION.md` — ready for Notion
+- ✅ **Internal API Guide**: `INTERNAL-API-DOCUMENTATION-GUIDE.md` — best practices
+- ✅ **Complete API Inventory**: All internal endpoints documented
+
+### 5. **Technical Configuration**
+- ✅ **OpenAPI 3.1 Specification**: Partner API spec in `openapi-partner.yaml`
 - ✅ **Theme Customization**: CSS variables for brand colors in `@theme/styles.css`
 - ✅ **Validation Workflow**: GitHub Actions for linting and validation
 - ✅ **Link Checking**: Automatic broken link detection
 - ✅ **Preview Deployments**: PR-based preview URLs for review
 
-### 4. **Repository Structure**
+### 6. **Repository Structure**
 ```
 nimbus-developer-portal/
-├── @theme/styles.css          # Brand colors & styling
-├── assets/                    # Logo & favicon assets
-├── guides/                    # Documentation guides
-├── redocly.yaml               # Portal configuration
-├── openapi.yaml               # ⚠️ NEEDS API SPECS
-├── index.md                   # Landing page
-├── api-reference.md           # API reference page
-└── [other documentation files]
+├── @theme/styles.css                    # Brand colors & styling
+├── assets/                              # Logo & favicon assets
+├── guides/                              # Documentation guides
+│   ├── webhooks.md                      # ✅ COMPLETE - Webhook integration guide
+│   └── [other guides]
+├── redocly.yaml                         # Portal configuration (partner API integrated)
+├── openapi-partner.yaml                  # ✅ COMPLETE - Partner API spec
+├── openapi.yaml                         # Legacy placeholder (can be removed)
+├── index.md                             # Landing page
+├── api-reference.md                     # API reference page
+├── ENGINEERING-HANDOFF.md               # This file
+├── PARTNER-API-DOCUMENTATION-PLAN.md    # Detailed partner API plan
+├── INTERNAL-APIS-NOTION.md              # ✅ Internal APIs for Notion
+└── INTERNAL-API-DOCUMENTATION-GUIDE.md  # Internal API best practices
 ```
+
+---
+
+## 🎯 Partner API Scope (What Partners Need)
+
+### ✅ **Pharmacy Operations Only**
+
+Partners need access to **pharmacy-side operations**:
+
+1. **Webhooks** ✅ **COMPLETE**
+   - Register webhook endpoints
+   - Receive real-time pharmacy event notifications
+   - Events: `shipment:created`, `shipment:cancelled`, `medication:updated`
+
+2. **Refill Requests** ✅ **COMPLETE**
+   - Request prescription refills
+   - Check refill eligibility
+
+3. **Shipment Tracking** (Future)
+   - Track shipment status
+   - Get tracking information
+
+### ❌ **NOT for Partners** (Internal Only)
+
+These APIs are **internal only** and documented separately:
+- ❌ Clinic creation/management
+- ❌ Practitioner creation/management
+- ❌ Patient creation (handled internally)
+- ❌ RPA workflows
+- ❌ Admin operations
+- ❌ Payment processing (internal)
+
+**Internal APIs are documented in**: `INTERNAL-APIS-NOTION.md` (for Notion)
 
 ---
 
 ## 🚨 Critical Next Steps for Engineering
 
-### **Phase 1: API Specification Population** (HIGH PRIORITY)
+### **Phase 1: Verify & Enhance Partner API** (HIGH PRIORITY)
 
-The portal currently contains **placeholder API endpoints**. Engineering needs to populate `openapi.yaml` with actual API specifications.
+#### **1 Verify Webhook Event Payloads** 🔴 **URGENT**
 
-#### **1.1 NovaMed API Integration** 🔴 **URGENT**
-
-**Objective**: Document all APIs that need to be passed on to partners from NovaMed.
+**Current Status**: Webhook events are documented, but payloads need verification against actual implementation.
 
 **Tasks**:
-- [ ] **Identify all NovaMed APIs** that partners need access to
-- [ ] **Document each endpoint** in OpenAPI 3.1 format:
-  - Request/response schemas
-  - Authentication requirements
-  - Error responses
-  - Example payloads
-- [ ] **Add endpoint descriptions** explaining:
-  - What the endpoint does
-  - When partners should use it
-  - Required parameters
-  - Response format
-- [ ] **Include example requests/responses** for each endpoint
-- [ ] **Document rate limits** and usage constraints
+- [ ] **Verify webhook payload structure** matches actual implementation
+  - Check `sendShipmentCreatedWebhook` in `sendWebhook.util.js`
+  - Check `sendMedicationUpdatedWebhook` payload structure
+  - Verify all fields are documented correctly
+- [ ] **Test webhook delivery** in sandbox environment
+- [ ] **Verify webhook authentication** (`X-API-Key` header)
+- [ ] **Document webhook retry behavior** (if different from documented)
+- [ ] **Add webhook signature verification** (if implemented)
 
-**Key Endpoints to Document** (if applicable):
-- [ ] Order creation/management endpoints
-- [ ] Prescription refill endpoints
-- [ ] Patient data endpoints
-- [ ] Inventory/availability endpoints
-- [ ] Tracking/status endpoints
-- [ ] Webhook configuration endpoints
+**Files to Review**:
+- `NovaMed-FoundersBox/novamed-api/src/utils/sendWebhook.util.js`
+- `NovaMed-FoundersBox/novamed-api/src/controllers/shippingController.js`
+- `NovaMed-FoundersBox/novamed-api/src/controllers/pharmetika.webhook.controller.js`
 
-**File to Edit**: `openapi.yaml`
+**Update**:
+- `openapi-partner.yaml` — webhook event schemas
+- `guides/webhooks.md` — payload examples
 
-**Example Structure**:
-```yaml
-paths:
-  /orders:
-    post:
-      summary: Create a new pharmacy order
-      description: |
-        Creates a new order in the Nimbus OS system. This endpoint
-        integrates with NovaMed to process prescription orders.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderRequest'
-            example:
-              patientId: "pat_123"
-              prescriptionId: "rx_456"
-              # ... actual fields
-      responses:
-        '201':
-          description: Order created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderResponse'
-```
+#### **1.2 Verify Refill Request Endpoint**
 
-#### **1.2 Schema Definitions**
+**Current Status**: Refill endpoint is documented, needs verification.
 
 **Tasks**:
-- [ ] **Define all data models** in `components/schemas` section
-- [ ] **Include field descriptions** for all properties
-- [ ] **Specify required vs optional** fields
-- [ ] **Add validation rules** (min/max length, formats, etc.)
-- [ ] **Document enums** and allowed values
+- [ ] **Test refill request endpoint** against sandbox
+- [ ] **Verify request/response schemas** match implementation
+- [ ] **Verify refill eligibility rules** (shipped/delivered only)
+- [ ] **Test error responses** (duplicate refill, invalid medication request)
+- [ ] **Add more examples** if needed
 
-**Example**:
-```yaml
-components:
-  schemas:
-    OrderRequest:
-      type: object
-      required:
-        - patientId
-        - prescriptionId
-      properties:
-        patientId:
-          type: string
-          description: Unique identifier for the patient
-          example: "pat_123"
-        prescriptionId:
-          type: string
-          description: Prescription identifier from NovaMed
-          example: "rx_456"
-```
+**Files to Review**:
+- `NovaMed-FoundersBox/novamed-api/src/controllers/external.controller.js` (saveRefillRequest)
+- `NovaMed-FoundersBox/novamed-api/src/validators/external/refill.validator.js`
 
-#### **1.3 Authentication Documentation**
+**Update**:
+- `openapi-partner.yaml` — refill endpoint schemas
+- `guides/refills.md` — refill workflow documentation
 
-**Tasks**:
-- [ ] **Document API key generation** process
-- [ ] **Explain authentication flow** in `guides/authentication.md`
-- [ ] **Add security requirements** to OpenAPI spec
-- [ ] **Document token refresh** (if applicable)
-- [ ] **Include example auth headers** in guides
+#### **1.3 Add Missing Endpoints** (If Needed)
 
-#### **1.4 Webhook Documentation**
+**Potential Additional Endpoints**:
+- [ ] **GET shipment status** — Check shipment status by ID
+- [ ] **GET medication order status** — Check medication order status
+- [ ] **List webhooks** — Get all registered webhooks for a clinic
 
-**Tasks**:
-- [ ] **Document webhook events** from NovaMed
-- [ ] **Add webhook signature verification** details
-- [ ] **Include webhook payload examples**
-- [ ] **Document retry behavior** and error handling
-- [ ] **Update `guides/webhooks.md`** with actual implementation
+**Decision Needed**: Do partners need read-only endpoints to check status, or is webhook-only sufficient?
 
 ---
 
-### **Phase 2: Content Updates** (MEDIUM PRIORITY)
+### **Phase 2: Content Enhancement** (MEDIUM PRIORITY)
 
-#### **2.1 Update Base URLs**
-
-**Current**: Placeholder URLs  
-**Action Required**:
-- [ ] Update `openapi.yaml` servers section with actual URLs
-- [ ] Verify sandbox and production endpoints
-- [ ] Update any hardcoded URLs in guide pages
-
-#### **2.2 Populate Guide Content**
+#### **2.1 Update Guide Pages**
 
 **Files to Update**:
-- [ ] `guides/quickstart.md` - Add actual integration steps
-- [ ] `guides/orders.md` - Document real order workflows
-- [ ] `guides/refills.md` - Document refill processes
-- [ ] `guides/tracking.md` - Add tracking implementation details
-- [ ] `guides/errors-idempotency.md` - Document actual error codes
+- [ ] `guides/quickstart.md` — Add partner-specific quickstart
+- [ ] `guides/authentication.md` — Document API key authentication
+- [ ] `guides/refills.md` — Expand refill workflow documentation
+- [ ] `guides/tracking.md` — Document shipment tracking (if endpoints added)
+- [ ] `guides/errors-idempotency.md` — Document partner API error codes
 
-#### **2.3 Add Code Examples**
+#### **2.2 Add More Code Examples**
 
 **Tasks**:
-- [ ] **Add cURL examples** for each endpoint
-- [ ] **Add JavaScript/Node.js examples**
-- [ ] **Add Python examples**
-- [ ] **Add Go examples** (if applicable)
-- [ ] **Test all code examples** to ensure they work
+- [ ] **Add more webhook handler examples** (different frameworks)
+- [ ] **Add refill request examples** in multiple languages
+- [ ] **Add error handling examples**
+- [ ] **Add idempotency implementation examples**
+
+#### **2.3 Testing Documentation**
+
+**Tasks**:
+- [ ] **Create testing guide** for partners
+- [ ] **Document sandbox environment** setup
+- [ ] **Add webhook testing strategies** (ngrok, Postman, etc.)
+- [ ] **Document common testing scenarios**
 
 ---
 
 ### **Phase 3: Testing & Validation** (HIGH PRIORITY)
 
-#### **3.1 OpenAPI Validation**
+#### **3.1 Partner API Testing**
 
-**Before Deployment**:
-```bash
-# Run validation locally
-cd nimbus-developer-portal
-npx @redocly/cli lint openapi.yaml
-
-# Auto-fix common issues
-npx @redocly/cli lint openapi.yaml --fix
-
-# Preview locally
-npx @redocly/cli preview-docs
-```
-
-**Checklist**:
-- [ ] All endpoints have descriptions
-- [ ] All schemas are properly defined
-- [ ] All examples are valid JSON
-- [ ] No duplicate operation IDs
-- [ ] All references resolve correctly
+**Tasks**:
+- [ ] **Test webhook registration** in sandbox
+- [ ] **Test webhook delivery** — trigger actual events
+- [ ] **Verify webhook payloads** match documentation
+- [ ] **Test refill request endpoint** in sandbox
+- [ ] **Verify error responses** match documentation
+- [ ] **Test API key authentication**
+- [ ] **Test rate limiting** (if applicable)
 
 #### **3.2 Integration Testing**
 
 **Tasks**:
-- [ ] **Test API examples** against sandbox environment
-- [ ] **Verify authentication** works as documented
-- [ ] **Test webhook delivery** and signature verification
-- [ ] **Validate error responses** match documentation
-- [ ] **Test rate limiting** behavior
+- [ ] **Create test partner account** in sandbox
+- [ ] **Set up test webhook endpoint** (ngrok or similar)
+- [ ] **Trigger test events** and verify delivery
+- [ ] **Test refill request flow** end-to-end
+- [ ] **Verify idempotency** handling
 
 #### **3.3 Documentation Review**
 
 **Tasks**:
-- [ ] **Review all guide pages** for accuracy
+- [ ] **Review all partner API documentation** for accuracy
+- [ ] **Verify all code examples** work correctly
 - [ ] **Check all links** (internal and external)
-- [ ] **Verify code examples** compile/run correctly
 - [ ] **Test mobile responsiveness**
 - [ ] **Verify dark mode** works correctly
+- [ ] **Review with partner stakeholders**
 
 ---
 
-## 📋 NovaMed API Integration Checklist
+## 📋 Partner API Implementation Checklist
 
-### **Discovery Phase**
-- [ ] Meet with NovaMed team to identify all available APIs
-- [ ] Document API endpoints and their purposes
-- [ ] Identify which APIs partners need access to
-- [ ] Understand authentication/authorization requirements
-- [ ] Document rate limits and usage constraints
-- [ ] Identify webhook events and payloads
+### **Discovery Phase** ✅ **COMPLETE**
+- [x] Identified partner API scope (pharmacy operations only)
+- [x] Documented webhook events and payloads
+- [x] Documented refill request endpoint
+- [x] Created OpenAPI specification
+- [x] Created webhook integration guide
 
-### **Documentation Phase**
-- [ ] Create OpenAPI spec for each endpoint
-- [ ] Document request/response schemas
-- [ ] Add example requests/responses
-- [ ] Document error codes and messages
-- [ ] Create integration guides
-- [ ] Add code examples in multiple languages
+### **Documentation Phase** ✅ **MOSTLY COMPLETE**
+- [x] Created OpenAPI spec for partner endpoints
+- [x] Documented webhook registration/deletion
+- [x] Documented refill request endpoint
+- [x] Created webhook integration guide with examples
+- [x] Added code examples (Node.js, Python, cURL)
+- [ ] **Verify payload structures** against implementation ⚠️ **NEEDS VERIFICATION**
+- [ ] **Add more examples** if needed
+- [ ] **Document error codes** specific to partner API
 
-### **Testing Phase**
-- [ ] Test all endpoints against sandbox
-- [ ] Verify authentication works
-- [ ] Test webhook delivery
-- [ ] Validate error handling
-- [ ] Review documentation accuracy
+### **Testing Phase** 🔄 **IN PROGRESS**
+- [ ] Test webhook registration in sandbox
+- [ ] Test webhook delivery with actual events
+- [ ] Verify webhook payloads match documentation
+- [ ] Test refill request endpoint
+- [ ] Verify error handling
+- [ ] Test API key authentication
+- [ ] End-to-end integration testing
 
-### **Deployment Phase**
-- [ ] Validate OpenAPI spec
-- [ ] Deploy to staging/preview
-- [ ] Review with stakeholders
-- [ ] Deploy to production
-- [ ] Announce to partners
+### **Deployment Phase** ✅ **COMPLETE**
+- [x] Partner OpenAPI spec integrated into Redocly
+- [x] Webhook guide deployed
+- [x] Portal is live and accessible
+- [ ] **Final verification** after testing complete
+- [ ] **Partner onboarding** process
 
 ---
 
@@ -291,25 +283,25 @@ npx @redocly/cli preview-docs
 
 2. **Create a feature branch**:
    ```bash
-   git checkout -b feature/add-novamed-apis
+   git checkout -b feature/verify-webhook-payloads
    ```
 
-3. **Edit `openapi.yaml`**:
-   - Add new endpoints under `paths`
-   - Add schemas under `components/schemas`
-   - Update existing endpoints as needed
+3. **Edit Partner API Spec**:
+   - Edit `openapi-partner.yaml` for API changes
+   - Edit `guides/webhooks.md` for webhook documentation
+   - Edit `guides/refills.md` for refill documentation
 
 4. **Validate locally**:
    ```bash
-   npx @redocly/cli lint openapi.yaml
+   npx @redocly/cli lint openapi-partner.yaml
    npx @redocly/cli preview-docs
    ```
 
 5. **Commit and push**:
    ```bash
-   git add openapi.yaml
-   git commit -m "feat: add NovaMed order creation endpoint"
-   git push origin feature/add-novamed-apis
+   git add openapi-partner.yaml guides/webhooks.md
+   git commit -m "feat: verify and update webhook payload structures"
+   git push origin feature/verify-webhook-payloads
    ```
 
 6. **Create Pull Request**:
@@ -320,14 +312,14 @@ npx @redocly/cli preview-docs
 
 ### **Key Files to Edit**
 
-| File | Purpose | Priority |
-|------|---------|----------|
-| `openapi.yaml` | API endpoint specifications | 🔴 CRITICAL |
-| `guides/quickstart.md` | Integration getting started guide | 🟡 HIGH |
-| `guides/authentication.md` | Auth flow documentation | 🟡 HIGH |
-| `guides/orders.md` | Order workflow documentation | 🟡 HIGH |
-| `guides/webhooks.md` | Webhook implementation guide | 🟡 HIGH |
-| `index.md` | Landing page content | 🟢 MEDIUM |
+| File | Purpose | Status | Priority |
+|------|---------|--------|----------|
+| `openapi-partner.yaml` | Partner API specifications | ✅ Complete | 🔴 Verify payloads |
+| `guides/webhooks.md` | Webhook integration guide | ✅ Complete | 🟡 Verify examples |
+| `guides/refills.md` | Refill workflow guide | 🟡 Needs content | 🟡 HIGH |
+| `guides/authentication.md` | API key authentication | 🟡 Needs update | 🟡 HIGH |
+| `guides/quickstart.md` | Partner quickstart | 🟡 Needs content | 🟢 MEDIUM |
+| `guides/tracking.md` | Shipment tracking | 🟡 Needs content | 🟢 MEDIUM |
 
 ---
 
@@ -335,14 +327,17 @@ npx @redocly/cli preview-docs
 
 ### **Internal Documentation**
 - **Repository**: [github.com/Nimbus-Healthcare/nimbus-developer-portal](https://github.com/Nimbus-Healthcare/nimbus-developer-portal)
-- **Handoff Guide**: See `HANDOFF.md` in repository
-- **Theme Guide**: See `THEME.md` for styling customization
-- **Testing Guide**: See `TESTING.md` for validation procedures
+- **Partner API Plan**: `PARTNER-API-DOCUMENTATION-PLAN.md`
+- **Internal APIs**: `INTERNAL-APIS-NOTION.md` (for Notion)
+- **Internal API Guide**: `INTERNAL-API-DOCUMENTATION-GUIDE.md`
+- **Handoff Guide**: `HANDOFF.md` (technical details)
+- **Theme Guide**: `THEME.md` (styling customization)
+- **Testing Guide**: `TESTING.md` (validation procedures)
 
 ### **External Resources**
 - **Redocly Docs**: [redocly.com/docs](https://redocly.com/docs)
 - **OpenAPI Spec**: [spec.openapis.org/oas/v3.1.0](https://spec.openapis.org/oas/v3.1.0)
-- **Redocly Cloud**: [app.cloud.redocly.com](https://app.cloud.redocly.com/org/nimbus-d39ns/project/nimbus-os)
+- **Redocly Cloud**: [app.cloud.redocly.com/org/nimbus-d39ns/project/nimbus-os](https://app.cloud.redocly.com/org/nimbus-d39ns/project/nimbus-os)
 
 ### **Support Contacts**
 - **API Support**: api@nimbus-os.com
@@ -353,16 +348,18 @@ npx @redocly/cli preview-docs
 
 ## 🎯 Success Criteria
 
-The portal will be considered **complete** when:
+The partner API portal will be considered **complete** when:
 
-- ✅ All NovaMed APIs are documented in OpenAPI format
-- ✅ All endpoints have working code examples
-- ✅ Authentication flow is documented and tested
-- ✅ Webhook implementation is complete
-- ✅ All guide pages are populated with real content
-- ✅ Code examples work against sandbox environment
-- ✅ Documentation is reviewed and approved
-- ✅ Portal is ready for partner onboarding
+- ✅ Partner OpenAPI spec is created and integrated ✅ **DONE**
+- ✅ Webhook integration guide is complete ✅ **DONE**
+- [ ] Webhook payloads verified against actual implementation
+- [ ] Refill endpoint tested and verified
+- [ ] All code examples tested and working
+- [ ] Authentication flow documented and tested
+- [ ] Error responses documented
+- [ ] Sandbox testing completed
+- [ ] Documentation reviewed and approved
+- [ ] Portal ready for partner onboarding
 
 ---
 
@@ -372,6 +369,7 @@ The portal will be considered **complete** when:
 - Changes pushed to `main` branch automatically trigger deployment
 - Build process includes: linting, link checking, validation
 - Deployment typically completes in 1-2 minutes
+- **Current Status**: ✅ Working correctly
 
 ### **Manual Deployment**
 1. Navigate to [Redocly Cloud Deployments](https://app.cloud.redocly.com/org/nimbus-d39ns/project/nimbus-os/deployments)
@@ -386,25 +384,67 @@ The portal will be considered **complete** when:
 
 ---
 
-## 📝 Notes & Considerations
+## 📝 Important Notes
 
-### **NovaMed Integration**
-- Ensure all NovaMed APIs are properly documented
-- Document any partner-specific requirements
-- Include rate limiting and usage guidelines
-- Document webhook events and payloads
+### **Partner API Scope**
+- ✅ **Pharmacy operations only** (webhooks, refills, tracking)
+- ❌ **NOT internal operations** (clinic/practitioner management, RPA)
+- Internal APIs documented separately in Notion
+
+### **Webhook Events**
+Partners receive these events:
+- `shipment:created` — When prescriptions are shipped
+- `shipment:cancelled` — When shipments are cancelled
+- `medication:updated` — When medication status changes
+
+### **Authentication**
+- Partner APIs use **API Key** authentication (`X-API-Key` header)
+- API keys are clinic-scoped
+- Contact api@nimbus-os.com to obtain API keys
 
 ### **Security**
-- All API documentation should emphasize security best practices
-- Document PHI handling requirements
-- Include HIPAA compliance notes where applicable
-- Document authentication and authorization clearly
+- All webhook endpoints must use HTTPS
+- API keys must be verified
+- Idempotency required for webhook processing
+- Rate limiting may apply (to be documented)
 
-### **Partner Experience**
-- Keep documentation clear and concise
-- Provide working code examples
-- Include troubleshooting guides
-- Make it easy for partners to get started
+---
+
+## 🔍 Verification Tasks
+
+### **Immediate Actions Needed**
+
+1. **Verify Webhook Payloads** 🔴 **URGENT**
+   - Check actual webhook payload structure in code
+   - Compare with documented schemas
+   - Update `openapi-partner.yaml` if needed
+   - Update `guides/webhooks.md` examples
+
+2. **Test Refill Endpoint** 🟡 **HIGH**
+   - Test in sandbox environment
+   - Verify request/response schemas
+   - Test error cases
+   - Update documentation if needed
+
+3. **Review Code Examples** 🟡 **HIGH**
+   - Test all code examples
+   - Verify they work against sandbox
+   - Add more examples if needed
+
+---
+
+## 📊 Current Status Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Portal Infrastructure | ✅ Complete | Fully deployed and working |
+| Partner OpenAPI Spec | ✅ Complete | Needs payload verification |
+| Webhook Guide | ✅ Complete | Comprehensive guide with examples |
+| Refill Documentation | 🟡 Partial | Endpoint documented, needs testing |
+| Internal API Docs | ✅ Complete | Ready for Notion |
+| Code Examples | ✅ Complete | Node.js, Python, cURL |
+| Testing | 🔄 Pending | Needs sandbox testing |
+| Partner Onboarding | 🔄 Pending | After testing complete |
 
 ---
 
@@ -412,12 +452,13 @@ The portal will be considered **complete** when:
 
 If you have questions about:
 - **Portal Infrastructure**: Review `HANDOFF.md` and `README.md`
+- **Partner APIs**: Review `PARTNER-API-DOCUMENTATION-PLAN.md`
+- **Internal APIs**: Review `INTERNAL-APIS-NOTION.md` and `INTERNAL-API-DOCUMENTATION-GUIDE.md`
 - **OpenAPI Specification**: See [OpenAPI Spec Docs](https://spec.openapis.org/oas/v3.1.0)
 - **Redocly Platform**: See [Redocly Documentation](https://redocly.com/docs)
-- **NovaMed APIs**: Contact the NovaMed integration team
 - **General Support**: Reach out to api@nimbus-os.com
 
 ---
 
 **Last Updated**: December 2025  
-**Next Review**: After Phase 1 completion
+**Next Review**: After webhook payload verification and testing completion

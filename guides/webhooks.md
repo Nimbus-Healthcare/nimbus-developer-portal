@@ -143,7 +143,6 @@ All webhook events follow this structure:
 ```json
 {
   "event_name": "medication:updated",
- ication:updated",
   "event_data": {
     "medication_order_id": "880e8400-e29b-41d4-a716-446655440003",
     "prescription_id": "990e8400-e29b-41d4-a716-446655440004",
