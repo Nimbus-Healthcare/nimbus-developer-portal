@@ -4,6 +4,11 @@ apis:
   main:
     root: ./openapi.yaml
 
+# Logo configuration
+logo:
+  image: ./assets/logo.png
+  altText: Nimbus OS Logo
+
 # Navigation configuration
 navbar:
   items:
@@ -44,3 +49,18 @@ footer:
 seo:
   title: Nimbus OS Developer Portal
   description: API documentation and guides for integrating with Nimbus OS
+
+# Theme configuration for Realm
+theme:
+  colors:
+    primary: '#0ED2C3'  # Nimbus OS Teal
+    success: '#2FFFC7'  # Signal Green
+    warning: '#FFA726'
+    error: '#FF4F7B'  # Crimson
+  typography:
+    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    headings:
+      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontWeight: '300'  # Light
+    code:
+      fontFamily: '"JetBrains Mono", "Fira Code", monospace'
