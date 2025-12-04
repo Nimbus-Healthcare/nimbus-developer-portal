@@ -2,28 +2,54 @@
 /* Using CSS variables to customize colors */
 
 :root {
-  /* Nimbus Brand Colors */
-  --color-primary: #0ED2C3;           /* Nimbus OS Teal */
-  --color-primary-hover: #0bb8a8;     /* Darker teal for hover */
-  --color-success: #2FFFC7;          /* Signal Green */
-  --color-warning: #FFA726;          /* Warning orange */
-  --color-error: #FF4F7B;             /* Crimson */
+  /* Nimbus Brand Colors - Primary */
+  --color-primary: #0ED2C3 !important;           /* Nimbus OS Teal */
+  --color-primary-hover: #0bb8a8 !important;     /* Darker teal for hover */
   
   /* Link colors */
-  --link-text-color: #0ED2C3;         /* Teal for links */
-  --link-text-color-hover: #0bb8a8;   /* Darker teal on hover */
+  --link-text-color: #0ED2C3 !important;         /* Teal for links */
+  --link-text-color-hover: #0bb8a8 !important;   /* Darker teal on hover */
+  
+  /* Semantic colors */
+  --color-success: #2FFFC7 !important;           /* Signal Green */
+  --color-warning: #FFA726 !important;           /* Warning orange */
+  --color-error: #FF4F7B !important;             /* Crimson */
   
   /* Typography */
-  --h1-text-color: #111827;           /* Dark text for headings */
-  --text-color: #374151;              /* Body text */
+  --h1-text-color: #111827 !important;           /* Dark text for headings */
+  --text-color: #374151 !important;              /* Body text */
 }
 
 /* Dark mode support */
 :root.dark {
-  --color-primary: #0ED2C3;           /* Keep teal bright in dark mode */
-  --color-primary-hover: #2FFFC7;     /* Signal green on hover */
-  --link-text-color: #0ED2C3;
-  --link-text-color-hover: #2FFFC7;
-  --h1-text-color: #E6E9F0;           /* Light text for headings */
-  --text-color: #9DA9B8;              /* Muted text */
+  --color-primary: #0ED2C3 !important;           /* Keep teal bright in dark mode */
+  --color-primary-hover: #2FFFC7 !important;     /* Signal green on hover */
+  --link-text-color: #0ED2C3 !important;
+  --link-text-color-hover: #2FFFC7 !important;
+  --h1-text-color: #E6E9F0 !important;           /* Light text for headings */
+  --text-color: #9DA9B8 !important;              /* Muted text */
+}
+
+/* Additional specific overrides for links */
+a {
+  color: var(--link-text-color) !important;
+}
+
+a:hover {
+  color: var(--link-text-color-hover) !important;
+}
+
+/* Button and primary action colors */
+button[class*="primary"],
+a[class*="primary"],
+[class*="button-primary"] {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+button[class*="primary"]:hover,
+a[class*="primary"]:hover,
+[class*="button-primary"]:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
 }
