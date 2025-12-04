@@ -216,7 +216,7 @@ Typography is controlled via CSS variables and can be customized:
 
 - [Redocly Theme Customization](https://redocly.com/docs/realm/branding/customize-styles)
 - [Redocly CSS Variables](https://redocly.com/docs/realm/branding/css-variables/common)
-- [Nimbus Brand Guidelines](../NIMBUS-OS-BRAND-GUIDELINES-2025-11-24.md)
+- [Nimbus Brand Guidelines](https://github.com/Nimbus-Healthcare/nimbus-os/blob/main/NIMBUS-OS-BRAND-GUIDELINES-2025-11-24.md)
 
 ---
 
