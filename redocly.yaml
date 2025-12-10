@@ -11,12 +11,6 @@ logo:
   altText: Nimbus OS Logo
   favicon: ./assets/favicon/NIMBUS_favicon.ico
 
-# OpenAPI Reference configuration
-openapi:
-  hideSidebar: false
-  pagination: none
-  schemaExpansionLevel: 1
-
 # Navigation configuration
 navbar:
   items:
