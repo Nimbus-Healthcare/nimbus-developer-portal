@@ -170,6 +170,5 @@ Refill not eligible:
 
 ## Next Steps
 
-- [Learn about tracking](/guides/tracking)
 - [Set up webhooks](/guides/webhooks)
-- [Read the API reference](/api-reference#tag/Refills)
+- [Read the API reference](/api-reference)
