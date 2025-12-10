@@ -1,37 +1,78 @@
 ---
 title: Overview
-description: Introduction to the Nimbus OS API
+description: Introduction to the NovaMed Partner API
 ---
 
 # Overview
 
-The Nimbus OS API provides programmatic access to pharmacy operations, order management, and patient care workflows. Build integrations that automate prescription fulfillment, manage refills, and receive real-time updates.
+The NovaMed Integration API is a set of HTTP endpoints that help your app integrate with NovaMed for complete patient care management, prescription fulfillment, and order tracking.
+
+## Base URLs
+
+<div class="env-table">
+  <div class="env-row">
+    <span class="env-label">Development</span>
+    <code class="env-url">https://novamed-feapidev.stackmod.info</code>
+  </div>
+  <div class="env-row">
+    <span class="env-label">Production</span>
+    <code class="env-url">https://feapi.novamed.care</code>
+  </div>
+</div>
+
+## Request and Response Format
+
+All API access is over HTTPS. All data is sent and received as JSON.
+
+**Required Headers:**
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| `Content-Type` | `application/json` | Request body format |
+| `Accept` | `application/json` | Expected response format |
+| `x-api-key` | Your API key | Authentication |
 
 ## Key Capabilities
 
-### Order Management
+### Practitioners
 
-Create and track pharmacy orders programmatically. The API handles the complete order lifecycle from creation through fulfillment and delivery.
+Create and manage practitioners (doctors, veterinarians) in the NovaMed system.
 
-- Create orders with idempotency support
-- Retrieve order details and status
-- Track shipments with carrier integration
+- Onboard new practitioners with credentials
+- Assign practitioners to clinics
+- Manage practitioner details and signatures
 
-### Refill Workflows
+### Patients
 
-Automate prescription refill requests with eligibility checking and approval workflows.
+Register and manage patients in the NovaMed platform.
 
-- Initiate refill requests
-- Check refill eligibility
+- Create patient profiles with demographics
+- Manage patient contact and address information
+- Link patients to clinics
+
+### Medication Requests
+
+Create and manage medication orders for patients.
+
+- Submit medication requests with prescribing practitioner
+- Specify medication details, dosing, and refills
+- Track medication order status
+
+### Refills
+
+Request prescription refills for existing medication orders.
+
+- Initiate refill requests for shipped/delivered medications
+- Automatic eligibility checking
 - Track refill status through fulfillment
 
-### Real-time Updates
+### Webhooks
 
-Receive webhook notifications for important events in your integration.
+Receive real-time notifications for important events.
 
-- Order status changes
-- Refill approvals
-- Shipment tracking updates
+- Shipment creation and updates
+- Medication order status changes
+- Prescription status updates
 
 ## Use Cases
 
@@ -47,26 +88,23 @@ Enable patients to request refills and track orders through your application. Pr
 
 Connect pharmacy operations with care management systems. Automate refill requests based on patient needs and care plans.
 
+### Telemedicine Platforms
+
+Integrate prescription workflows into virtual care. Create medication orders directly from consultations.
+
 ## Architecture
 
-The Nimbus OS API follows RESTful principles with JSON request and response bodies. All endpoints use HTTPS and require API key authentication.
-
-### Base URLs
-
-- **Sandbox**: `https://api-sandbox.nimbus-os.com`
-- **Production**: `https://api.nimbus-os.com`
+The NovaMed API follows RESTful principles with JSON request and response bodies. All endpoints use HTTPS and require API key authentication.
 
 ### Authentication
 
-All requests require an API key sent in the `X-API-Key` header. [Learn more about authentication →](/guides/authentication)
+All requests require an API key sent in the `x-api-key` header. You'll also need a Clinic ID for most operations.
 
-### Rate Limits
-
-API rate limits ensure fair usage across all integrations. Limits vary by endpoint and are documented in the [API Reference](/api-reference).
+[Learn more about authentication →](/guides/authentication)
 
 ## HIPAA & Security
 
-The Nimbus OS API handles Protected Health Information (PHI) and is designed to comply with HIPAA requirements. All data is encrypted in transit using TLS 1.2 or higher.
+The NovaMed API handles Protected Health Information (PHI) and is designed to comply with HIPAA requirements. All data is encrypted in transit using TLS 1.2 or higher.
 
 When building integrations:
 
@@ -75,7 +113,7 @@ When building integrations:
 - Implement proper access controls
 - Follow your organization's HIPAA compliance policies
 
-**Important**: API access is limited to Approved Partners only. Production access involving PHI requires a Business Associate Agreement (BAA). Do not send PHI to Sandbox. See [API Terms & Conditions](/api-terms) for complete requirements.
+**Important**: API access is limited to Approved Partners only. Production access involving PHI requires a Business Associate Agreement (BAA). Do not send PHI to the Development environment. See [API Terms & Conditions](/api-terms) for complete requirements.
 
 ## Getting Started
 

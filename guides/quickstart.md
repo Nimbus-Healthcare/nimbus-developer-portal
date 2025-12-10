@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Get started with the Nimbus OS API in minutes
+description: Get started with the NovaMed Partner API in minutes
 ---
 
 # Quickstart
@@ -9,110 +9,168 @@ Get your first API call working in under 5 minutes.
 
 ## Prerequisites
 
-- An API key (get one from the developer portal)
+- An API key and Clinic ID (provided by NovaMed team)
 - `curl` or your preferred HTTP client
-- Access to the sandbox environment
-- Approved Partner status (API access is limited to Approved Partners)
+- Access to the development environment
+- Approved Partner status
 
 **Note**: By using the API, you agree to the [API License Terms & Conditions](/api-terms).
 
 ## Get Your API Key
 
-1. Sign in to the [developer portal](https://developer.nimbus-os.com)
-2. Navigate to API Keys
-3. Create a new API key for sandbox testing
-4. Copy the key securely (you won't be able to view it again)
+API credentials are provided by the NovaMed team upon partner approval:
 
-**Note**: API key generation is currently managed through the developer portal. Contact support if you need assistance.
+1. Complete the partner onboarding process
+2. Sign the Business Associate Agreement (BAA) if accessing PHI
+3. Receive your API Key and Clinic ID from the NovaMed team
+4. Store credentials securely
+
+**Contact**: [api@nimbus-os.com](mailto:api@nimbus-os.com) to request API access.
 
 ## Make Your First Request
 
-Let's retrieve an order to verify your setup:
+Let's create a practitioner to verify your setup:
 
 ```bash
-curl https://api-sandbox.nimbus-os.com/orders/ord_1234567890 \
-  -H "X-API-Key: your-api-key-here"
-```
-
-If successful, you'll receive a JSON response with order details:
-
-```json
-{
-  "id": "ord_1234567890",
-  "patientId": "pat_1234567890",
-  "prescriptionId": "rx_9876543210",
-  "status": "processing",
-  "createdAt": "2025-01-15T10:30:00Z",
-  "updatedAt": "2025-01-15T14:22:00Z"
-}
-```
-
-## Create Your First Order
-
-Now let's create an order:
-
-```bash
-curl -X POST https://api-sandbox.nimbus-os.com/orders \
-  -H "X-API-Key: your-api-key-here" \
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+  -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: unique-key-123" \
+  -H "Accept: application/json" \
   -d '{
-    "patientId": "pat_1234567890",
-    "prescriptionId": "rx_9876543210",
-    "shippingAddress": {
-      "street1": "123 Main St",
-      "city": "Austin",
-      "state": "TX",
-      "zip": "78701",
-      "country": "US"
-    }
+    "first_name": "Sarah",
+    "last_name": "Johnson",
+    "email": "dr.johnson@partnerclinic.com",
+    "npi_number": "1234567890",
+    "assigned_clinic": "your-clinic-id-here"
   }'
 ```
 
-The response includes the created order:
+If successful, you'll receive a JSON response:
 
 ```json
 {
-  "id": "ord_abc123xyz",
-  "patientId": "pat_1234567890",
-  "prescriptionId": "rx_9876543210",
-  "status": "pending",
-  "shippingAddress": {
-    "street1": "123 Main St",
-    "city": "Austin",
-    "state": "TX",
-    "zip": "78701",
-    "country": "US"
+  "success": true,
+  "data": {
+    "practitioner_id": "660e8400-e29b-41d4-a716-446655440001"
   },
-  "createdAt": "2025-01-15T15:00:00Z"
+  "message": "Practitioner created successfully"
 }
 ```
 
-## Using Idempotency Keys
+## Create a Patient
 
-Notice the `Idempotency-Key` header in the request above. This ensures that if you retry the request (due to a network error, for example), you won't create duplicate orders.
-
-**Best practice**: Always include an idempotency key when creating resources. Use a unique value for each distinct operation.
+Now let's create a patient:
 
 ```bash
-# First request
-curl -X POST https://api-sandbox.nimbus-os.com/orders \
-  -H "X-API-Key: your-api-key" \
-  -H "Idempotency-Key: order-2025-01-15-001" \
-  -d '{...}'
-
-# Retry with same key - returns original order, no duplicate created
-curl -X POST https://api-sandbox.nimbus-os.com/orders \
-  -H "X-API-Key: your-api-key" \
-  -H "Idempotency-Key: order-2025-01-15-001" \
-  -d '{...}'
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/patient \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "clinic_id": "your-clinic-id-here",
+    "first_name": "John",
+    "last_name": "Smith",
+    "date_of_birth": "1985-03-15",
+    "gender": "male",
+    "email": "john.smith@email.com",
+    "phone": "+1-555-0199",
+    "address_line1": "123 Main Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94102"
+  }'
 ```
+
+The response includes the created patient:
+
+```json
+{
+  "success": true,
+  "data": {
+    "patient_id": "770e8400-e29b-41d4-a716-446655440002"
+  },
+  "message": "Patient created successfully"
+}
+```
+
+## Create a Medication Request
+
+Now create a medication request for the patient:
+
+```bash
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/medication-request \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "clinic_id": "your-clinic-id-here",
+    "patient_id": "770e8400-e29b-41d4-a716-446655440002",
+    "practitioner_id": "660e8400-e29b-41d4-a716-446655440001",
+    "medication_name": "Testosterone Cypionate",
+    "medication_strength": "200mg/ml",
+    "quantity": 1,
+    "refills": 3,
+    "days_supply": 30,
+    "instructions": "Inject 0.5ml intramuscularly twice weekly"
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "medication_request_id": "880e8400-e29b-41d4-a716-446655440003"
+  },
+  "message": "Medication request created successfully"
+}
+```
+
+## Set Up Webhooks
+
+Register a webhook to receive real-time notifications:
+
+```bash
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "clinic_id": "your-clinic-id-here",
+    "webhook_url": "https://your-server.com/webhooks/novamed"
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "webhook_id": "bb0e8400-e29b-41d4-a716-446655440006"
+  },
+  "message": "Webhook created successfully"
+}
+```
+
+## Complete Integration Flow
+
+Here's the typical integration workflow:
+
+<ol class="workflow-list">
+  <li><strong>Create Practitioner</strong> — Onboard prescribing practitioners</li>
+  <li><strong>Create Patient</strong> — Register patients with demographics and address</li>
+  <li><strong>Create Medication Request</strong> — Submit prescriptions for fulfillment</li>
+  <li><strong>Register Webhook</strong> — Receive status updates automatically</li>
+  <li><strong>Request Refills</strong> — Initiate refills for shipped medications</li>
+</ol>
 
 ## Next Steps
 
 - [Learn about authentication](/guides/authentication)
-- [Explore order management](/guides/orders)
 - [Set up webhooks](/guides/webhooks)
+- [Handle errors](/guides/errors-idempotency)
 - [Read the API reference](/api-reference)
 
 ## Common Issues
@@ -120,17 +178,33 @@ curl -X POST https://api-sandbox.nimbus-os.com/orders \
 ### 401 Unauthorized
 
 Your API key is missing or invalid. Verify:
-- The key is included in the `X-API-Key` header
+- The key is included in the `x-api-key` header (lowercase)
 - The key hasn't been revoked
-- You're using the correct environment (sandbox vs production)
+- You're using the correct environment
+
+### 400 Bad Request
+
+The request is invalid. Common causes:
+- Missing required fields
+- Invalid `clinic_id`
+- Invalid UUID format
+- Invalid email format
 
 ### 404 Not Found
 
-The resource doesn't exist. In sandbox, use the test IDs provided in examples.
+The resource doesn't exist. Check:
+- The resource ID is correct
+- The resource belongs to your clinic
+- You're using the correct environment
 
-### 422 Validation Error
+## Environment URLs
 
-The request body is invalid. Check the error response for specific field issues.
+| Environment | Base URL |
+|-------------|----------|
+| Development | `https://novamed-feapidev.stackmod.info` |
+| Production | `https://feapi.novamed.care` |
+
+**Important**: Do not send PHI to the Development environment.
 
 ## Need Help?
 

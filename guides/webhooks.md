@@ -1,11 +1,11 @@
 ---
 title: Webhook Integration Guide
-description: Complete guide to integrating webhooks for real-time pharmacy event notifications
+description: Complete guide to integrating webhooks for real-time NovaMed event notifications
 ---
 
 # Webhook Integration Guide
 
-Webhooks enable you to receive real-time notifications about pharmacy operations, including shipment creation, prescription status updates, and medication order changes. This guide will help you set up and integrate webhooks into your system.
+Webhooks enable you to receive real-time notifications about NovaMed operations, including order status updates, shipment notifications, and medication request changes. This guide will help you set up and integrate webhooks into your system.
 
 ---
 
@@ -13,32 +13,23 @@ Webhooks enable you to receive real-time notifications about pharmacy operations
 
 ### What Are Webhooks?
 
-Webhooks are HTTP callbacks that allow Nimbus OS to notify your system when specific events occur. Instead of polling our API for updates, you register a webhook endpoint, and we send POST requests to your endpoint whenever events happen.
+Webhooks are HTTP callbacks that allow NovaMed to notify your system when specific events occur. Instead of polling the API for updates, you register a webhook endpoint, and we send POST requests to your endpoint whenever events happen.
 
 ### Benefits
 
 - ✅ **Real-time updates** - Receive notifications immediately when events occur
-- ✅ **Efficient** - No need to poll our API repeatedly
+- ✅ **Efficient** - No need to poll the API repeatedly
 - ✅ **Reliable** - Built-in retry mechanisms for failed deliveries
 - ✅ **Scalable** - Handles high-volume event streams efficiently
 
 ---
 
-## Webhook Events
+## Base URLs
 
-Nimbus OS sends the following webhook events:
-
-### 1. Shipment Created
-**Event**: `shipment:created`  
-**Triggered**: When a prescription shipment is created and ready to ship
-
-### 2. Shipment Cancelled
-**Event**: `shipment:cancelled`  
-**Triggered**: When a shipment is cancelled
-
-### 3. Medication Updated
-**Event**: `medication:updated`  
-**Triggered**: When medication order status changes (validated, submitted, filled, shipped, delivered, cancelled)
+| Environment | URL |
+|-------------|-----|
+| **Development** | `https://novamed-feapidev.stackmod.info` |
+| **Production** | `https://feapi.novamed.care` |
 
 ---
 
@@ -46,15 +37,16 @@ Nimbus OS sends the following webhook events:
 
 ### Step 1: Register Your Webhook Endpoint
 
-First, register your webhook URL with Nimbus OS:
+Register your webhook URL with NovaMed:
 
 ```bash
-curl -X POST https://api.nimbus-os.com/api/external/webhook \
-  -H "X-API-Key: your-api-key-here" \
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+  -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
   -d '{
-    "clinic_id": "your-clinic-uuid",
-    "webhook_url": "https://your-domain.com/webhooks/nimbus"
+    "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+    "webhook_url": "https://your-domain.com/webhooks/novamed"
   }'
 ```
 
@@ -63,9 +55,12 @@ curl -X POST https://api.nimbus-os.com/api/external/webhook \
 {
   "success": true,
   "data": {
-    "webhook_id": "660e8400-e29b-41d4-a716-446655440001"
+    "webhook_id": "660e8400-e29b-41d4-a716-446655440001",
+    "webhook_url": "https://your-domain.com/webhooks/novamed",
+    "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+    "created_at": "2025-01-15T10:00:00.000Z"
   },
-  "message": "Webhook created successfully"
+  "message": "Webhook registered successfully"
 }
 ```
 
@@ -74,8 +69,41 @@ curl -X POST https://api.nimbus-os.com/api/external/webhook \
 Your webhook endpoint must:
 - Accept HTTPS POST requests
 - Return HTTP 200 OK quickly (process asynchronously)
-- Verify the `X-API-Key` header
+- Verify the `x-api-key` header
 - Handle duplicate events (idempotency)
+
+---
+
+## Webhook Events
+
+NovaMed sends the following webhook events:
+
+### Order Status Events
+
+| Event | Description |
+|-------|-------------|
+| `order:created` | New order has been created |
+| `order:processing` | Order is being processed |
+| `order:shipped` | Order has been shipped |
+| `order:delivered` | Order has been delivered |
+| `order:cancelled` | Order has been cancelled |
+
+### Medication Request Events
+
+| Event | Description |
+|-------|-------------|
+| `medication_request:created` | New medication request created |
+| `medication_request:approved` | Medication request approved |
+| `medication_request:filled` | Medication has been filled |
+| `medication_request:cancelled` | Medication request cancelled |
+
+### Refill Events
+
+| Event | Description |
+|-------|-------------|
+| `refill:requested` | Refill request submitted |
+| `refill:approved` | Refill request approved |
+| `refill:denied` | Refill request denied |
 
 ---
 
@@ -85,85 +113,60 @@ All webhook events follow this structure:
 
 ```json
 {
-  "event_name": "shipment:created",
-  "event_data": {
+  "event_type": "order:shipped",
+  "event_id": "evt_abc123xyz",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
     // Event-specific data
   }
 }
 ```
 
-### Shipment Created Event
+### Order Shipped Event Example
 
 ```json
 {
-  "event_name": "shipment:created",
-  "event_data": {
-    "shipment_id": "550e8400-e29b-41d4-a716-446655440000",
-    "medication_orders": [
-      "660e8400-e29b-41d4-a716-446655440001",
-      "770e8400-e29b-41d4-a716-446655440002"
-    ],
-    "shipment_status": "pending",
-    "shipped_at": "2024-01-15T10:00:00.000Z",
+  "event_type": "order:shipped",
+  "event_id": "evt_abc123xyz",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "order_id": "ord_12345",
+    "patient_id": "pat_67890",
+    "medication_request_id": "med_req_11111",
     "tracking_number": "1Z999AA10123456784",
-    "tracking_url": "https://tracking.example.com/1Z999AA10123456784",
-    "shipping_partner": "FedEx",
-    "delivery_method": "next-day",
-    "delivery_location": {
-      "address": "456 Oak Ave",
-      "city": "Austin",
-      "state": "TX",
-      "postal_code": "78702"
-    },
-    "notes": "Signature required",
-    "barcode_url": "https://example.com/barcode.png",
-    "shipping_label": "https://example.com/label.pdf"
+    "carrier": "UPS",
+    "estimated_delivery": "2025-01-18",
+    "shipping_address": {
+      "line1": "123 Main Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip": "94102"
+    }
   }
 }
 ```
 
-### Shipment Cancelled Event
+### Medication Request Approved Event Example
 
 ```json
 {
-  "event_name": "shipment:cancelled",
-  "event_data": {
-    "shipment_id": "550e8400-e29b-41d4-a716-446655440000",
-    "medication_orders": [
-      "660e8400-e29b-41d4-a716-446655440001"
-    ],
-    "cancellation_reason": "Patient request",
-    "cancelled_at": "2024-01-15T11:00:00.000Z"
+  "event_type": "medication_request:approved",
+  "event_id": "evt_def456xyz",
+  "timestamp": "2025-01-15T09:00:00.000Z",
+  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "medication_request_id": "med_req_11111",
+    "patient_id": "pat_67890",
+    "practitioner_id": "prac_22222",
+    "medication_name": "Testosterone Cypionate",
+    "quantity": 1,
+    "refills": 3,
+    "approved_at": "2025-01-15T09:00:00.000Z"
   }
 }
 ```
-
-### Medication Updated Event
-
-```json
-{
-  "event_name": "medication:updated",
-  "event_data": {
-    "medication_order_id": "880e8400-e29b-41d4-a716-446655440003",
-    "prescription_id": "990e8400-e29b-41d4-a716-446655440004",
-    "medication_request_id": "aa0e8400-e29b-41d4-a716-446655440005",
-    "status": "shipped",
-    "previous_status": "filled",
-    "updated_at": "2024-01-15T10:30:00.000Z",
-    "pharmetika_status": "shipped",
-    "tracking_number": "1Z999AA10123456784",
-    "notes": "Out for delivery"
-  }
-}
-```
-
-**Possible Status Values**:
-- `validated` - Order validated successfully
-- `submitted` - Order submitted to pharmacy
-- `filled` - Medication filled
-- `shipped` - Medication shipped
-- `delivered` - Medication delivered
-- `cancelled` - Medication cancelled
 
 ---
 
@@ -178,10 +181,10 @@ const app = express();
 app.use(express.json());
 
 // Webhook endpoint
-app.post('/webhooks/nimbus', async (req, res) => {
+app.post('/webhooks/novamed', async (req, res) => {
   // 1. Verify API key
   const apiKey = req.headers['x-api-key'];
-  if (apiKey !== process.env.NIMBUS_API_KEY) {
+  if (apiKey !== process.env.NOVAMED_WEBHOOK_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -193,45 +196,58 @@ app.post('/webhooks/nimbus', async (req, res) => {
     await processWebhookEvent(req.body);
   } catch (error) {
     console.error('Error processing webhook:', error);
-    // Log error for retry handling
   }
 });
 
 async function processWebhookEvent(payload) {
-  const { event_name, event_data } = payload;
+  const { event_type, data, event_id } = payload;
 
-  switch (event_name) {
-    case 'shipment:created':
-      await handleShipmentCreated(event_data);
+  // Check for duplicate events
+  if (await isEventProcessed(event_id)) {
+    console.log('Duplicate event, skipping:', event_id);
+    return;
+  }
+
+  switch (event_type) {
+    case 'order:shipped':
+      await handleOrderShipped(data);
       break;
-    case 'shipment:cancelled':
-      await handleShipmentCancelled(event_data);
+    case 'order:delivered':
+      await handleOrderDelivered(data);
       break;
-    case 'medication:updated':
-      await handleMedicationUpdated(event_data);
+    case 'medication_request:approved':
+      await handleMedicationApproved(data);
+      break;
+    case 'refill:approved':
+      await handleRefillApproved(data);
       break;
     default:
-      console.log('Unknown event:', event_name);
+      console.log('Unknown event:', event_type);
   }
+
+  // Mark event as processed
+  await markEventProcessed(event_id);
 }
 
-async function handleShipmentCreated(data) {
-  console.log('Shipment created:', data.shipment_id);
-  // Update your system with shipment information
+async function handleOrderShipped(data) {
+  console.log('Order shipped:', data.order_id);
+  // Update your system with tracking information
   // Send notification to patient
+}
+
+async function handleOrderDelivered(data) {
+  console.log('Order delivered:', data.order_id);
   // Update order status in your database
 }
 
-async function handleShipmentCancelled(data) {
-  console.log('Shipment cancelled:', data.shipment_id);
-  // Update your system
-  // Notify patient of cancellation
+async function handleMedicationApproved(data) {
+  console.log('Medication approved:', data.medication_request_id);
+  // Trigger next steps in your workflow
 }
 
-async function handleMedicationUpdated(data) {
-  console.log('Medication updated:', data.medication_order_id, data.status);
-  // Update medication status in your system
-  // Trigger status-specific workflows
+async function handleRefillApproved(data) {
+  console.log('Refill approved:', data.refill_id);
+  // Process refill order
 }
 
 app.listen(3000, () => {
@@ -244,122 +260,124 @@ app.listen(3000, () => {
 ```python
 from flask import Flask, request, jsonify
 import os
-import asyncio
-from typing import Dict, Any
+import threading
 
 app = Flask(__name__)
 
-@app.route('/webhooks/nimbus', methods=['POST'])
+@app.route('/webhooks/novamed', methods=['POST'])
 def webhook_handler():
     # 1. Verify API key
-    api_key = request.headers.get('X-API-Key')
-    if api_key != os.getenv('NIMBUS_API_KEY'):
+    api_key = request.headers.get('x-api-key')
+    if api_key != os.getenv('NOVAMED_WEBHOOK_SECRET'):
         return jsonify({'error': 'Unauthorized'}), 401
     
     # 2. Return 200 immediately
     payload = request.get_json()
     
     # 3. Process event asynchronously
-    asyncio.create_task(process_webhook_event(payload))
+    thread = threading.Thread(target=process_webhook_event, args=(payload,))
+    thread.start()
     
     return jsonify({'received': True}), 200
 
-async def process_webhook_event(payload: Dict[str, Any]):
-    event_name = payload.get('event_name')
-    event_data = payload.get('event_data')
+def process_webhook_event(payload):
+    event_type = payload.get('event_type')
+    data = payload.get('data')
+    event_id = payload.get('event_id')
     
-    if event_name == 'shipment:created':
-        await handle_shipment_created(event_data)
-    elif event_name == 'shipment:cancelled':
-        await handle_shipment_cancelled(event_data)
-    elif event_name == 'medication:updated':
-        await handle_medication_updated(event_data)
+    handlers = {
+        'order:shipped': handle_order_shipped,
+        'order:delivered': handle_order_delivered,
+        'medication_request:approved': handle_medication_approved,
+        'refill:approved': handle_refill_approved,
+    }
+    
+    handler = handlers.get(event_type)
+    if handler:
+        handler(data)
     else:
-        print(f'Unknown event: {event_name}')
+        print(f'Unknown event: {event_type}')
 
-async def handle_shipment_created(data: Dict[str, Any]):
-    shipment_id = data.get('shipment_id')
-    print(f'Shipment created: {shipment_id}')
-    # Update your system with shipment information
+def handle_order_shipped(data):
+    print(f"Order shipped: {data.get('order_id')}")
+    # Update your system with tracking information
 
-async def handle_shipment_cancelled(data: Dict[str, Any]):
-    shipment_id = data.get('shipment_id')
-    print(f'Shipment cancelled: {shipment_id}')
-    # Update your system
+def handle_order_delivered(data):
+    print(f"Order delivered: {data.get('order_id')}")
+    # Update order status
 
-async def handle_medication_updated(data: Dict[str, Any]):
-    medication_order_id = data.get('medication_order_id')
-    status = data.get('status')
-    print(f'Medication updated: {medication_order_id} - {status}')
-    # Update medication status in your system
+def handle_medication_approved(data):
+    print(f"Medication approved: {data.get('medication_request_id')}")
+    # Trigger workflow
+
+def handle_refill_approved(data):
+    print(f"Refill approved: {data.get('refill_id')}")
+    # Process refill
 
 if __name__ == '__main__':
     app.run(port=3000)
 ```
 
-### cURL Testing Example
+---
 
-Test your webhook endpoint locally using ngrok:
+## Managing Webhooks
+
+### Delete a Webhook
+
+To remove a registered webhook:
 
 ```bash
-# 1. Start your webhook server locally
-node webhook-server.js
-
-# 2. Expose it via ngrok (in another terminal)
-ngrok http 3000
-
-# 3. Register the ngrok URL as your webhook
-curl -X POST https://api-sandbox.nimbus-os.com/api/external/webhook \
-  -H "X-API-Key: your-api-key" \
+curl -X DELETE https://novamed-feapidev.stackmod.info/api/external/webhook \
+  -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
   -d '{
-    "clinic_id": "your-clinic-uuid",
-    "webhook_url": "https://your-ngrok-url.ngrok.io/webhooks/nimbus"
+    "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
+    "webhook_id": "660e8400-e29b-41d4-a716-446655440001"
   }'
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Webhook deleted successfully"
+}
 ```
 
 ---
 
 ## Security Best Practices
 
-### 1. Verify API Key
+### 1. Verify the API Key
 
-Always verify the `X-API-Key` header matches your API key:
+Always verify the `x-api-key` header matches your webhook secret:
 
 ```javascript
 const apiKey = req.headers['x-api-key'];
-if (apiKey !== process.env.NIMBUS_API_KEY) {
+if (apiKey !== process.env.NOVAMED_WEBHOOK_SECRET) {
   return res.status(401).json({ error: 'Unauthorized' });
 }
 ```
 
 ### 2. Use HTTPS Only
 
-Webhook endpoints **must** use HTTPS. Nimbus OS will not send webhooks to HTTP endpoints.
+Webhook endpoints **must** use HTTPS. NovaMed will not send webhooks to HTTP endpoints.
 
 ### 3. Implement Idempotency
 
-Handle duplicate events gracefully:
+Handle duplicate events gracefully using the `event_id`:
 
 ```javascript
-const processedEvents = new Set();
+const processedEvents = new Map();
 
-async function processWebhookEvent(payload) {
-  // Use shipment_id or medication_order_id as idempotency key
-  const idempotencyKey = payload.event_data.shipment_id || 
-                        payload.event_data.medication_order_id;
-  
-  if (processedEvents.has(idempotencyKey)) {
-    console.log('Duplicate event, skipping');
-    return;
-  }
-  
-  processedEvents.add(idempotencyKey);
-  
-  // Process event...
-  
-  // Store in database for persistence across restarts
-  await saveProcessedEvent(idempotencyKey);
+async function isEventProcessed(eventId) {
+  return processedEvents.has(eventId);
+}
+
+async function markEventProcessed(eventId) {
+  processedEvents.set(eventId, Date.now());
+  // Also persist to database for reliability
 }
 ```
 
@@ -368,7 +386,7 @@ async function processWebhookEvent(payload) {
 Your endpoint should return HTTP 200 OK within **5 seconds**. Process events asynchronously:
 
 ```javascript
-app.post('/webhooks/nimbus', (req, res) => {
+app.post('/webhooks/novamed', (req, res) => {
   // Return immediately
   res.status(200).json({ received: true });
   
@@ -377,92 +395,23 @@ app.post('/webhooks/nimbus', (req, res) => {
 });
 ```
 
-### 5. Handle Errors Gracefully
-
-Log errors but don't crash your server:
-
-```javascript
-async function processWebhookEvent(payload) {
-  try {
-    // Process event
-  } catch (error) {
-    console.error('Error processing webhook:', error);
-    // Log to error tracking service (Sentry, etc.)
-    // Don't throw - let the webhook succeed
-  }
-}
-```
-
----
-
-## Idempotency
-
-### Why Idempotency Matters
-
-Webhooks may be delivered multiple times due to:
-- Network retries
-- Server restarts
-- Duplicate deliveries
-
-### Implementation Strategy
-
-**Option 1: In-Memory Set (Simple)**
-```javascript
-const processedEvents = new Set();
-
-function isProcessed(idempotencyKey) {
-  return processedEvents.has(idempotencyKey);
-}
-
-function markProcessed(idempotencyKey) {
-  processedEvents.add(idempotencyKey);
-}
-```
-
-**Option 2: Database (Recommended)**
-```javascript
-async function isProcessed(idempotencyKey) {
-  const event = await db.webhookEvents.findOne({
-    where: { idempotency_key: idempotencyKey }
-  });
-  return !!event;
-}
-
-async function markProcessed(idempotencyKey) {
-  await db.webhookEvents.create({
-    idempotency_key: idempotencyKey,
-    processed_at: new Date()
-  });
-}
-```
-
-**Option 3: Redis (High Volume)**
-```javascript
-const redis = require('redis');
-const client = redis.createClient();
-
-async function isProcessed(idempotencyKey) {
-  const exists = await client.exists(`webhook:${idempotencyKey}`);
-  return exists === 1;
-}
-
-async function markProcessed(idempotencyKey) {
-  await client.setex(`webhook:${idempotencyKey}`, 86400, '1'); // 24 hours
-}
-```
-
 ---
 
 ## Error Handling & Retries
 
-### Webhook Delivery Retries
+### Retry Policy
 
-Nimbus OS will retry failed webhook deliveries:
-- **Initial attempt**: Immediate
-- **Retry 1**: After 1 minute
-- **Retry 2**: After 5 minutes
-- **Retry 3**: After 15 minutes
-- **Retry 4**: After 1 hour
+NovaMed will retry failed webhook deliveries:
+
+| Attempt | Delay |
+|---------|-------|
+| 1 | Immediate |
+| 2 | 1 minute |
+| 3 | 5 minutes |
+| 4 | 15 minutes |
+| 5 | 1 hour |
+
+After 5 failed attempts, the webhook delivery is marked as failed.
 
 ### Handling Failures
 
@@ -471,20 +420,6 @@ If your endpoint returns a non-200 status code, the webhook will be retried. To 
 1. **Return 200 OK** even if processing fails
 2. **Log errors** for later processing
 3. **Process asynchronously** to avoid timeouts
-
-```javascript
-app.post('/webhooks/nimbus', (req, res) => {
-  // Always return 200 OK
-  res.status(200).json({ received: true });
-  
-  // Process in background
-  processWebhookEvent(req.body)
-    .catch(error => {
-      // Log error for retry queue
-      errorQueue.add({ payload: req.body, error });
-    });
-});
-```
 
 ---
 
@@ -502,136 +437,68 @@ app.post('/webhooks/nimbus', (req, res) => {
    ngrok http 3000
    ```
 
-3. **Register webhook**:
+3. **Register webhook** with the ngrok URL:
    ```bash
-   curl -X POST https://api-sandbox.nimbus-os.com/api/external/webhook \
-     -H "X-API-Key: your-api-key" \
+   curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+     -H "x-api-key: your-api-key" \
      -H "Content-Type: application/json" \
      -d '{
        "clinic_id": "your-clinic-uuid",
-       "webhook_url": "https://abc123.ngrok.io/webhooks/nimbus"
+       "webhook_url": "https://abc123.ngrok.io/webhooks/novamed"
      }'
    ```
 
-4. **Trigger test event** (create a shipment in sandbox)
+4. **Trigger a test event** by creating an order in the sandbox environment
 
-5. **Monitor ngrok requests**:
-   - Visit `http://localhost:4040` to see incoming requests
-
-### Testing with Postman
-
-1. **Set up webhook endpoint** in Postman Mock Server
-2. **Register webhook** with mock server URL
-3. **Monitor** incoming webhook calls
+5. **Monitor ngrok requests** at `http://localhost:4040`
 
 ---
 
-## Monitoring & Debugging
+## Troubleshooting
 
-### Logging
+### Webhooks Not Received
 
-Log all webhook events for debugging:
-
-```javascript
-app.post('/webhooks/nimbus', (req, res) => {
-  console.log('Webhook received:', {
-    event: req.body.event_name,
-    timestamp: new Date().toISOString(),
-    headers: req.headers
-  });
-  
-  res.status(200).json({ received: true });
-  processWebhookEvent(req.body);
-});
-```
-
-### Monitoring
-
-Track webhook processing metrics:
-- **Success rate**: Percentage of successfully processed webhooks
-- **Processing time**: Time to process each webhook
-- **Error rate**: Number of failed webhook processing attempts
-
-### Common Issues
-
-**Issue**: Webhooks not received
 - ✅ Check webhook URL is registered correctly
 - ✅ Verify endpoint is accessible (not behind firewall)
 - ✅ Ensure endpoint uses HTTPS
 - ✅ Check API key is correct
 
-**Issue**: Duplicate events
-- ✅ Implement idempotency checking
-- ✅ Use idempotency keys (shipment_id, medication_order_id)
+### Duplicate Events
 
-**Issue**: Timeout errors
+- ✅ Implement idempotency checking using `event_id`
+- ✅ Store processed event IDs in database
+
+### Timeout Errors
+
 - ✅ Return 200 OK quickly (< 5 seconds)
 - ✅ Process events asynchronously
 - ✅ Optimize database queries
 
 ---
 
-## Webhook Management
-
-### List Registered Webhooks
-
-Contact api@nimbus-os.com to get a list of your registered webhooks.
-
-### Update Webhook URL
-
-Delete the old webhook and register a new one:
-
-```bash
-# Delete old webhook
-curl -X DELETE https://api.nimbus-os.com/api/external/webhook/old-webhook-id \
-  -H "X-API-Key: your-api-key"
-
-# Register new webhook
-curl -X POST https://api.nimbus-os.com/api/external/webhook \
-  -H "X-API-Key: your-api-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "clinic_id": "your-clinic-uuid",
-    "webhook_url": "https://new-url.com/webhooks/nimbus"
-  }'
-```
-
-### Delete Webhook
-
-```bash
-curl -X DELETE https://api.nimbus-os.com/api/external/webhook/webhook-id \
-  -H "X-API-Key: your-api-key"
-```
-
----
-
 ## Best Practices Summary
 
 1. ✅ **Use HTTPS** - Required for webhook endpoints
-2. ✅ **Verify API Key** - Always check `X-API-Key` header
+2. ✅ **Verify API Key** - Always check `x-api-key` header
 3. ✅ **Return 200 OK Quickly** - Within 5 seconds
 4. ✅ **Process Asynchronously** - Don't block the response
-5. ✅ **Implement Idempotency** - Handle duplicate events
+5. ✅ **Implement Idempotency** - Handle duplicate events using `event_id`
 6. ✅ **Log Everything** - For debugging and monitoring
 7. ✅ **Handle Errors Gracefully** - Don't crash on errors
-8. ✅ **Monitor Performance** - Track success rates and processing times
-
----
-
-## Support
-
-- **API Support**: api@nimbus-os.com
-- **Documentation**: https://developer.nimbus-os.com
-- **Sandbox Environment**: https://api-sandbox.nimbus-os.com
 
 ---
 
 ## Next Steps
 
-1. ✅ Register your webhook endpoint
-2. ✅ Implement webhook handler
-3. ✅ Test with sandbox environment
-4. ✅ Deploy to production
-5. ✅ Monitor webhook delivery
+1. [Register your webhook endpoint](#step-1-register-your-webhook-endpoint)
+2. [Implement webhook handler](#implementation-examples)
+3. [Test with development environment](#testing-webhooks)
+4. Deploy to production
 
-For more information, see the [API Reference](/api-reference) documentation.
+## Support
+
+- **API Support**: api@nimbus-os.com
+- **Development Environment**: `https://novamed-feapidev.stackmod.info`
+- **Production Environment**: `https://feapi.novamed.care`
+
+For more information, see the [API Reference](/api-reference).

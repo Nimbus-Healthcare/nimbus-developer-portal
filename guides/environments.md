@@ -1,207 +1,266 @@
 ---
 title: Environments
-description: Sandbox vs Production environments
+description: Development vs Production environments for NovaMed Partner API
 ---
 
 # Environments
 
-The Nimbus OS API provides two environments: Sandbox for testing and Production for live integrations.
+The NovaMed Partner API provides two environments: Development for testing and Production for live integrations.
 
-## Sandbox
+## Base URLs
 
-Use the sandbox environment for development and testing.
+| Environment | Base URL |
+|-------------|----------|
+| **Development** | `https://novamed-feapidev.stackmod.info` |
+| **Production** | `https://feapi.novamed.care` |
 
-**Base URL**: `https://api-sandbox.nimbus-os.com`
+---
+
+## Development Environment
+
+Use the development environment for testing your integration.
+
+**Base URL**: `https://novamed-feapidev.stackmod.info`
 
 ### Features
 
-- **Test data**: Pre-configured test patients, prescriptions, and orders
-- **No real orders**: Orders created in sandbox don't result in actual shipments
+- **Test data**: Pre-configured test clinics, practitioners, patients, and medications
+- **No real orders**: Orders created in development don't result in actual shipments
 - **Full API access**: All endpoints available with test data
-- **Rate limits**: Higher rate limits for testing
+- **Higher rate limits**: More lenient rate limits for testing
 
-**Important**: Do not send PHI (Protected Health Information) to the Sandbox environment. PHI is not recommended and should not be transmitted to Sandbox. See [API Terms & Conditions](/api-terms) for details.
+### Important Notes
 
-### Test Data
+- ⚠️ **Do not send PHI** (Protected Health Information) to the Development environment
+- Development data may be reset periodically
+- Use provided test IDs for testing
 
-Sandbox includes test data you can use:
+### Getting Started with Development
 
-- **Patients**: `pat_1234567890`, `pat_test_001`, etc.
-- **Prescriptions**: `rx_9876543210`, `rx_test_001`, etc.
-- **Orders**: Create orders with test patient/prescription IDs
+1. Obtain your development API key from NovaMed
+2. Use the development base URL in all requests
+3. Start testing with your assigned clinic ID
 
-### Getting Started
+```bash
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+  -H "x-api-key: your-dev-api-key" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "npi_number": "1234567890",
+    "first_name": "Test",
+    "last_name": "Provider",
+    ...
+  }'
+```
 
-1. Create a sandbox API key in the developer portal
-2. Use the sandbox base URL
-3. Start testing with provided test data
+---
 
-## Production
+## Production Environment
 
-Use the production environment for live integrations.
+Use the production environment for live integrations with real patient data.
 
-**Base URL**: `https://api.nimbus-os.com`
+**Base URL**: `https://feapi.novamed.care`
 
 ### Features
 
 - **Real data**: All operations affect real patients and orders
 - **Actual shipments**: Orders result in real pharmacy fulfillment
-- **Stricter validation**: More rigorous validation and checks
-- **Production rate limits**: Standard rate limits apply
+- **Stricter validation**: More rigorous validation and compliance checks
+- **Standard rate limits**: Production rate limits apply
 
-### Migration Checklist
+### Production Requirements
 
-Before going to production:
+Before accessing production:
 
-- [ ] Test thoroughly in sandbox
-- [ ] Verify error handling
-- [ ] Set up webhook endpoints
-- [ ] Configure production API keys
-- [ ] Update base URLs
-- [ ] Test with real data (carefully)
-- [ ] Monitor initial requests
+1. ✅ Complete Business Associate Agreement (BAA) with Nimbus Healthcare
+2. ✅ Pass integration review with NovaMed team
+3. ✅ Complete testing in development environment
+4. ✅ Obtain production API credentials
 
-## Base URLs
+```bash
+curl -X POST https://feapi.novamed.care/api/external/practitioner \
+  -H "x-api-key: your-prod-api-key" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "npi_number": "1234567890",
+    "first_name": "Sarah",
+    "last_name": "Johnson",
+    ...
+  }'
+```
 
-| Environment | Base URL |
-|------------|----------|
-| Sandbox | `https://api-sandbox.nimbus-os.com` |
-| Production | `https://api.nimbus-os.com` |
+---
 
 ## API Keys
 
-API keys are environment-specific:
+API keys are environment-specific and tied to your clinic:
 
-- **Sandbox keys**: Only work with sandbox base URL
-- **Production keys**: Only work with production base URL
+| Environment | Key Format | Usage |
+|-------------|------------|-------|
+| Development | `dev_xxxxx` | Testing only |
+| Production | `prod_xxxxx` | Live operations |
 
-Create separate keys for each environment in the developer portal.
+### Key Management
+
+- **Never mix environments**: Development keys only work with the development URL
+- **Keep keys secure**: Store in environment variables, never in code
+- **Rotate regularly**: Contact NovaMed to rotate compromised keys
+
+---
 
 ## Rate Limits
 
-Rate limits vary by environment and endpoint:
+Rate limits vary by environment:
 
-### Sandbox
+### Development
 
-- **Orders**: 100 requests/minute
-- **Refills**: 100 requests/minute
-- **Webhooks**: 50 requests/minute
+| Endpoint | Limit |
+|----------|-------|
+| All endpoints | 100 requests/minute |
 
 ### Production
 
-- **Orders**: 60 requests/minute
-- **Refills**: 60 requests/minute
-- **Webhooks**: 30 requests/minute
+| Endpoint | Limit |
+|----------|-------|
+| All endpoints | 60 requests/minute |
 
-Rate limit headers are included in responses:
+### Rate Limit Headers
+
+All responses include rate limit information:
 
 ```
 X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 59
+X-RateLimit-Remaining: 55
 X-RateLimit-Reset: 1705320000
 ```
 
 ### Rate Limit Exceeded
 
-If you exceed rate limits:
+When you exceed rate limits, you'll receive a `429 Too Many Requests` response:
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "rate_limit_exceeded",
-    "message": "Rate limit exceeded",
-    "requestId": "req_abc123",
-    "details": {
-      "retryAfter": 60
-    }
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded. Please retry after 60 seconds.",
+    "retry_after": 60
   }
 }
 ```
 
-Wait for the `retryAfter` seconds before retrying.
+---
 
-## Test Data
+## Webhooks by Environment
 
-### Sandbox Test IDs
+Configure webhook URLs separately for each environment:
 
-Use these test IDs in sandbox:
+| Environment | Webhook Delivery |
+|-------------|------------------|
+| Development | Sends to your development webhook URL |
+| Production | Sends to your production webhook URL |
 
-**Patients**:
-- `pat_1234567890`
-- `pat_test_001`
-- `pat_test_002`
+Register webhooks for each environment:
 
-**Prescriptions**:
-- `rx_9876543210`
-- `rx_test_001`
-- `rx_test_002`
+```bash
+# Development webhook
+curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+  -H "x-api-key: your-dev-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clinic_id": "your-clinic-uuid",
+    "webhook_url": "https://your-dev-server.com/webhooks/novamed"
+  }'
 
-**Note**: Test IDs may change. Check the developer portal for current test data.
+# Production webhook
+curl -X POST https://feapi.novamed.care/api/external/webhook \
+  -H "x-api-key: your-prod-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clinic_id": "your-clinic-uuid",
+    "webhook_url": "https://your-prod-server.com/webhooks/novamed"
+  }'
+```
 
-### Production Data
+---
 
-In production, use real patient and prescription IDs from your system.
+## Migration Checklist
 
-## Webhooks
+Before moving from Development to Production:
 
-Webhook URLs are configured per environment:
+### Pre-Production Checklist
 
-- **Sandbox webhooks**: Use sandbox webhook URLs
-- **Production webhooks**: Use production webhook URLs
+- [ ] Complete all API integration testing in development
+- [ ] Verify error handling for all error codes
+- [ ] Test webhook delivery and processing
+- [ ] Implement idempotency for all write operations
+- [ ] Set up production webhook endpoints
+- [ ] Complete BAA with Nimbus Healthcare
+- [ ] Pass integration review with NovaMed team
+- [ ] Obtain production API credentials
+- [ ] Update application configuration with production URLs
 
-Configure webhook URLs separately for each environment in the developer portal.
+### Go-Live Checklist
 
-## Migration Guide
+- [ ] Configure production API keys securely
+- [ ] Register production webhook URLs
+- [ ] Start with low-volume testing
+- [ ] Monitor error rates and response times
+- [ ] Verify webhook delivery in production
+- [ ] Gradually increase traffic
 
-### Step 1: Complete Sandbox Testing
+---
 
-- Test all endpoints
-- Verify error handling
-- Test webhook delivery
-- Validate idempotency
+## Environment Comparison
 
-### Step 2: Prepare Production
+| Feature | Development | Production |
+|---------|-------------|------------|
+| **Base URL** | `novamed-feapidev.stackmod.info` | `feapi.novamed.care` |
+| **Data** | Test data | Real patient data |
+| **Orders** | No real shipments | Real shipments |
+| **PHI** | Not allowed | Allowed (with BAA) |
+| **Rate Limits** | 100 req/min | 60 req/min |
+| **Validation** | Basic | Strict |
+| **BAA Required** | No | Yes |
 
-- Create production API keys
-- Set up production webhook endpoints
-- Update configuration with production base URL
-- Review production rate limits
-
-### Step 3: Gradual Rollout
-
-- Start with low-volume testing
-- Monitor error rates
-- Verify webhook delivery
-- Gradually increase volume
-
-### Step 4: Monitor
-
-- Watch error rates
-- Monitor webhook delivery
-- Track API response times
-- Review logs regularly
-
-## Differences Summary
-
-| Feature | Sandbox | Production |
-|---------|---------|-------------|
-| Base URL | `api-sandbox.nimbus-os.com` | `api.nimbus-os.com` |
-| Data | Test data | Real data |
-| Orders | No real shipments | Real shipments |
-| Rate Limits | Higher | Standard |
-| Validation | Basic | Strict |
-| Webhooks | Test endpoints | Production endpoints |
+---
 
 ## Best Practices
 
-1. **Test in sandbox first**: Always test new features in sandbox
-2. **Use separate keys**: Never mix sandbox and production keys
-3. **Monitor production**: Watch error rates and webhook delivery
-4. **Gradual rollout**: Start with low volume in production
-5. **Keep sandbox active**: Use sandbox for ongoing testing
+1. **Always test in development first** - Never test new features in production
+2. **Use environment variables** - Store API keys and base URLs in environment variables
+3. **Separate configurations** - Maintain separate config files for each environment
+4. **Monitor production** - Set up alerting for error rates and API failures
+5. **Keep development active** - Use development for ongoing testing and debugging
+
+### Configuration Example
+
+```javascript
+// config.js
+const config = {
+  development: {
+    baseUrl: 'https://novamed-feapidev.stackmod.info',
+    apiKey: process.env.NOVAMED_DEV_API_KEY,
+    webhookUrl: 'https://dev.yourapp.com/webhooks/novamed'
+  },
+  production: {
+    baseUrl: 'https://feapi.novamed.care',
+    apiKey: process.env.NOVAMED_PROD_API_KEY,
+    webhookUrl: 'https://yourapp.com/webhooks/novamed'
+  }
+};
+
+const env = process.env.NODE_ENV || 'development';
+module.exports = config[env];
+```
+
+---
 
 ## Next Steps
 
-- [Get started with sandbox](/guides/quickstart)
+- [Get started with development](/guides/quickstart)
 - [Learn about authentication](/guides/authentication)
+- [Set up webhooks](/guides/webhooks)
 - [Read the API reference](/api-reference)

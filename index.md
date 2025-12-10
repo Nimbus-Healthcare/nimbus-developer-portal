@@ -1,40 +1,46 @@
 ---
-title: Nimbus OS Developer Portal
-description: Build with the operating system for personalized medicine
+title: NovaMed Partner API Documentation
+description: The NovaMed Integration API helps your app integrate with NovaMed
 ---
 
-# Nimbus OS API
+# NovaMed <span class="accent">Partner API</span>
 
-Build powerful healthcare integrations with the Nimbus OS API. Create orders, manage refills, and receive real-time updates through webhooks.
+The NovaMed Integration API is a set of HTTP endpoints that help your app integrate with NovaMed for complete patient care management, prescription fulfillment, and order tracking.
 
-## Get Started
-
-Start building in minutes with our simple API key authentication and comprehensive documentation.
-
-[Get Started →](/guides/quickstart)
+<div class="info-card">
+  <div class="info-card-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  </div>
+  <div class="info-card-content">
+    <h4>Postman Documentation</h4>
+    <a href="https://documenter.getpostman.com/view/49178248/2sB3QML9Jg" target="_blank">View in Postman →</a>
+  </div>
+</div>
 
 ## Base URLs
 
 Use the appropriate base URL for your environment:
 
-**Sandbox**
-```
-https://api-sandbox.nimbus-os.com
-```
-
-**Production**
-```
-https://api.nimbus-os.com
-```
+<div class="env-table">
+  <div class="env-row">
+    <span class="env-label">Development</span>
+    <code class="env-url">https://novamed-feapidev.stackmod.info</code>
+  </div>
+  <div class="env-row">
+    <span class="env-label">Production</span>
+    <code class="env-url">https://feapi.novamed.care</code>
+  </div>
+</div>
 
 ## Authentication
 
-All API requests require an API key in the `X-API-Key` header:
+We will provide an **API Key** and **Clinic Id**. All requests need to pass a header `x-api-key` with the provided value.
 
 ```bash
-curl https://api-sandbox.nimbus-os.com/orders \
-  -H "X-API-Key: your-api-key-here" \
-  -H "Content-Type: application/json"
+curl https://novamed-feapidev.stackmod.info/api/external/practitioner \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json"
 ```
 
 [Learn more about authentication →](/guides/authentication)
@@ -55,12 +61,29 @@ curl https://api-sandbox.nimbus-os.com/orders \
   {% /card %}
 {% /cards %}
 
-## What You Can Build
+## API Endpoints
 
-- **Order Management**: Create and track pharmacy orders programmatically
-- **Refill Workflows**: Automate prescription refill requests
-- **Real-time Updates**: Receive webhook notifications for order status changes
-- **HIPAA-Compliant**: Built with healthcare data security in mind
+The NovaMed Partner API supports the following core capabilities:
+
+<ol class="workflow-list">
+  <li><strong>Practitioners</strong> — Create and manage practitioners (doctors, veterinarians)</li>
+  <li><strong>Patients</strong> — Register and manage patients in the platform</li>
+  <li><strong>Medication Requests</strong> — Create medication orders for patients</li>
+  <li><strong>Refills</strong> — Request prescription refills for existing orders</li>
+  <li><strong>Webhooks</strong> — Receive real-time notifications for status updates</li>
+</ol>
+
+## Request and Response Format
+
+All API access is over HTTPS. All data is sent and received as JSON.
+
+**Required Headers:**
+
+| Header | Value |
+|--------|-------|
+| `Content-Type` | `application/json` |
+| `Accept` | `application/json` |
+| `x-api-key` | Your API key |
 
 ## Next Steps
 
@@ -73,7 +96,7 @@ curl https://api-sandbox.nimbus-os.com/orders \
 
 ## API Terms
 
-**Nimbus OS API Terms (Approved Partners Only).** By accessing Nimbus Healthcare Corporation APIs ("Nimbus OS", including Nimbus Healthcare, NovaMed) you agree to these terms. Access is by written approval only; credentials are unique per tenant and must be protected. APIs may process PHI; production PHI access requires a BAA. Do not send PHI to Sandbox. No scraping, reverse engineering, benchmarking, resale/sublicensing (except serving authorized customers), or security testing without written approval. No PCI/card data. Nimbus may change/suspend APIs; best efforts notice. APIs "as is"; liability capped to fees paid in prior 3 months. Notices: legal@nimbushealthcare.com. Travis County, TX.
+**NovaMed API Terms (Approved Partners Only).** By accessing NovaMed APIs you agree to these terms. Access is by written approval only; credentials are unique per tenant and must be protected. APIs may process PHI; production PHI access requires a BAA. Do not send PHI to Development environment. No scraping, reverse engineering, benchmarking, resale/sublicensing (except serving authorized customers), or security testing without written approval. No PCI/card data. NovaMed may change/suspend APIs; best efforts notice. APIs "as is"; liability capped to fees paid in prior 3 months. Notices: legal@nimbushealthcare.com. Travis County, TX.
 
 [View full API License Terms & Conditions →](/api-terms)
 

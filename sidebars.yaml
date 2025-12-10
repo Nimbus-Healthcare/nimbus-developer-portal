@@ -1,0 +1,33 @@
+# NovaMed Partner API Documentation Sidebar
+
+- page: index.md
+  label: Introduction
+
+- separator: Getting Started
+
+- page: guides/overview.md
+  label: Overview
+- page: guides/quickstart.md
+  label: Quickstart
+- page: guides/authentication.md
+  label: Authentication
+- page: guides/environments.md
+  label: Environments
+- page: guides/errors-idempotency.md
+  label: Error Handling
+- page: guides/webhooks.md
+  label: Webhook Guide
+
+- separator: API Reference
+
+- page: api-reference.md
+  label: Quick Reference
+- page: openapi-partner.yaml
+  label: Interactive API Docs
+
+- separator: Resources
+
+- page: changelog.md
+  label: Changelog
+- page: api-terms.md
+  label: API Terms

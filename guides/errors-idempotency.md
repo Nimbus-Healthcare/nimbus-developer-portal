@@ -1,11 +1,11 @@
 ---
 title: Errors & Idempotency
-description: Handle errors and ensure idempotent operations
+description: Handle API errors and ensure reliable operations
 ---
 
-# Errors & Idempotency
+# API Errors
 
-Understand error responses and implement idempotent API calls.
+Understand error responses and handle them properly in your integration.
 
 ## Error Response Format
 
@@ -13,213 +13,252 @@ All errors follow a consistent format:
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "error_code",
     "message": "Human-readable error message",
-    "requestId": "req_abc123xyz",
-    "details": {
-      // Additional error-specific details
-    }
+    "details": {}
   }
 }
 ```
 
 ### Error Fields
 
-- `code`: Machine-readable error code
-- `message`: Human-readable error message
-- `requestId`: Unique identifier for this request (useful for support)
-- `details`: Additional error information (structure varies)
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Always `false` for errors |
+| `error.message` | string | Human-readable error description |
+| `error.details` | object | Additional error information (optional) |
 
 ## HTTP Status Codes
 
-| Status | Meaning | Description |
-|--------|---------|-------------|
+The following table describes all the possible HTTP error codes:
+
+| Code | Name | Description |
+|------|------|-------------|
 | `200` | OK | Request succeeded |
 | `201` | Created | Resource created successfully |
-| `400` | Bad Request | Invalid request parameters |
+| `400` | Bad Request | Invalid request parameters or validation error |
 | `401` | Unauthorized | Missing or invalid API key |
-| `403` | Forbidden | Insufficient permissions |
-| `404` | Not Found | Resource doesn't exist |
-| `409` | Conflict | Idempotency key conflict |
-| `422` | Unprocessable Entity | Validation error |
-| `429` | Too Many Requests | Rate limit exceeded |
-| `500` | Internal Server Error | Server error |
+| `404` | Not Found | Resource not found |
+| `5XX` | Server Error | An error occurred on the NovaMed API |
 
-## Common Error Codes
+## Common Error Scenarios
 
-### Validation Errors
+### 400 Bad Request
+
+Returned when request validation fails:
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "validation_error",
-    "message": "The request body is invalid",
-    "requestId": "req_abc123",
-    "details": {
-      "field": "shippingAddress.zip",
-      "reason": "Invalid ZIP code format"
-    }
+    "message": "Clinic ID must be a valid UUID."
   }
 }
 ```
 
-### Authentication Errors
+**Common causes:**
+- Missing required fields
+- Invalid field formats (UUID, email, etc.)
+- Invalid clinic ID
+- Invalid practitioner or patient ID
+
+**Example - Clinic not found:**
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "unauthorized",
-    "message": "Invalid or missing API key",
-    "requestId": "req_abc123"
+    "message": "Clinic not found"
   }
 }
 ```
 
-### Not Found Errors
+### 401 Unauthorized
+
+Returned when authentication fails:
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "not_found",
-    "message": "The requested resource was not found",
-    "requestId": "req_abc123"
+    "message": "Unauthorized. This can happen if the access token is invalid, expired or has been revoked"
   }
 }
 ```
 
-### Idempotency Conflicts
+**Solutions:**
+- Verify the `x-api-key` header is present
+- Check that the API key is valid
+- Ensure you're using the correct environment
+
+### 404 Not Found
+
+Returned when a resource doesn't exist:
 
 ```json
 {
+  "success": false,
   "error": {
-    "code": "idempotency_key_conflict",
-    "message": "An order with this idempotency key already exists",
-    "requestId": "req_abc123"
+    "message": "Resource not found"
   }
 }
 ```
 
-## Idempotency
+**Common causes:**
+- Invalid resource ID
+- Resource was deleted
+- Wrong environment
 
-Idempotency ensures that retrying a request doesn't create duplicate resources.
+### Refill-Specific Errors
 
-### Using Idempotency Keys
-
-Include an `Idempotency-Key` header in POST requests:
-
-```bash
-curl -X POST https://api-sandbox.nimbus-os.com/orders \
-  -H "X-API-Key: your-api-key" \
-  -H "Idempotency-Key: unique-key-123" \
-  -d '{...}'
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Medication request not found"
+  }
+}
 ```
 
-### How It Works
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Refills are not possible for pending medication requests"
+  }
+}
+```
 
-1. **First request**: Creates the resource, returns 201
-2. **Retry with same key**: Returns original response (201) or conflict (409)
-3. **Different key**: Creates a new resource
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Refill request already exists"
+  }
+}
+```
 
-### Idempotency Key Format
+## Error Handling Best Practices
 
-- **Length**: 1-255 characters
-- **Uniqueness**: Must be unique per operation
-- **Format**: Any string (recommend descriptive format)
+### 1. Check Response Status
 
-**Recommended formats**:
-- `order-{date}-{sequence}`: `order-2025-01-15-001`
-- `order-{patientId}-{timestamp}`: `order-pat_123-1705320000`
-- UUID: `550e8400-e29b-41d4-a716-446655440000`
-
-### Idempotency Key Best Practices
-
-1. **Include in all POST requests**: Always use idempotency keys for resource creation
-2. **Make keys unique**: Use timestamps, UUIDs, or sequence numbers
-3. **Store keys**: Save idempotency keys with created resources for reference
-4. **Handle conflicts**: If you receive a 409, retrieve the existing resource
-
-### Example: Handling Idempotency
+Always check the `success` field in responses:
 
 ```python
 import requests
-import uuid
 
-def create_order(order_data):
-    idempotency_key = f"order-{uuid.uuid4()}"
-    
-    response = requests.post(
-        'https://api-sandbox.nimbus-os.com/orders',
-        headers={
-            'X-API-Key': api_key,
-            'Idempotency-Key': idempotency_key,
-            'Content-Type': 'application/json'
-        },
-        json=order_data
-    )
-    
-    if response.status_code == 409:
-        # Order already exists with this key
-        # Retrieve existing order or handle accordingly
-        existing_order_id = get_existing_order_id(idempotency_key)
-        return get_order(existing_order_id)
-    
-    return response.json()
+response = requests.post(url, headers=headers, json=data)
+result = response.json()
+
+if result.get('success'):
+    # Handle success
+    data = result.get('data')
+else:
+    # Handle error
+    error_message = result.get('error', {}).get('message')
+    print(f"Error: {error_message}")
 ```
 
-## Retry Strategies
+### 2. Handle Different Error Types
 
-### Exponential Backoff
+```python
+def handle_api_error(response):
+    result = response.json()
+    
+    if response.status_code == 400:
+        # Validation error - check your request
+        raise ValidationError(result['error']['message'])
+    
+    elif response.status_code == 401:
+        # Authentication error - check API key
+        raise AuthenticationError("Invalid API key")
+    
+    elif response.status_code == 404:
+        # Resource not found
+        raise NotFoundError(result['error']['message'])
+    
+    elif response.status_code >= 500:
+        # Server error - retry with backoff
+        raise ServerError("NovaMed API error, please retry")
+```
 
-Retry failed requests with increasing delays:
+### 3. Implement Retry Logic
+
+For server errors (5XX), implement retry with exponential backoff:
 
 ```python
 import time
 
-def retry_with_backoff(func, max_retries=5):
+def retry_with_backoff(func, max_retries=3):
     for attempt in range(max_retries):
         try:
             return func()
-        except RetryableError as e:
+        except ServerError as e:
             if attempt == max_retries - 1:
                 raise
             
-            wait_time = 2 ** attempt  # 1s, 2s, 4s, 8s, 16s
+            wait_time = 2 ** attempt  # 1s, 2s, 4s
+            print(f"Retrying in {wait_time}s...")
             time.sleep(wait_time)
 ```
 
-### Retryable vs Non-Retryable Errors
-
-**Retryable** (5xx errors, network errors):
-- `500` Internal Server Error
-- `502` Bad Gateway
-- `503` Service Unavailable
-- `504` Gateway Timeout
-- Network timeouts
-
-**Non-Retryable** (4xx errors):
-- `400` Bad Request
-- `401` Unauthorized
-- `403` Forbidden
-- `404` Not Found
-- `422` Validation Error
-
-**Special case**:
-- `409` Conflict: Don't retry, handle idempotency conflict
-
-### Request ID Tracking
-
-Always log the `requestId` from error responses. This helps with debugging and support:
+### 4. Log Errors for Debugging
 
 ```python
-try:
-    response = requests.post(...)
-    response.raise_for_status()
-except requests.HTTPError as e:
-    error_data = e.response.json()
-    request_id = error_data['error']['requestId']
-    logger.error(f"Request failed: {request_id}")
-    # Include requestId when contacting support
+import logging
+
+logger = logging.getLogger(__name__)
+
+def make_api_request(endpoint, data):
+    try:
+        response = requests.post(endpoint, json=data, headers=headers)
+        result = response.json()
+        
+        if not result.get('success'):
+            logger.error(f"API Error: {result.get('error')}")
+            logger.error(f"Request Data: {data}")
+        
+        return result
+    
+    except Exception as e:
+        logger.exception(f"Request failed: {e}")
+        raise
+```
+
+## Idempotency
+
+For operations that create resources, ensure idempotency by:
+
+1. **Using unique identifiers**: Generate unique IDs on your side before creating resources
+2. **Checking for existing resources**: Before creating, check if a resource already exists
+3. **Handling duplicates gracefully**: If a resource already exists, return the existing one
+
+### Example: Preventing Duplicate Refill Requests
+
+```python
+def request_refill(medication_request_id):
+    """
+    Request a refill, handling the case where one already exists.
+    """
+    response = requests.post(
+        f"{BASE_URL}/api/external/refill-request",
+        headers=headers,
+        json={"medication_request_id": medication_request_id}
+    )
+    
+    result = response.json()
+    
+    if result.get('success'):
+        return result['data']
+    
+    # Check if refill already exists
+    if "already exists" in result.get('error', {}).get('message', ''):
+        # Refill was already requested - this is OK
+        return {"status": "already_requested"}
+    
+    # Other error
+    raise RefillError(result['error']['message'])
 ```
 
 ## Error Handling Examples
@@ -229,82 +268,86 @@ except requests.HTTPError as e:
 ```python
 import requests
 
-def create_order(order_data, api_key, idempotency_key):
-    try:
-        response = requests.post(
-            'https://api-sandbox.nimbus-os.com/orders',
-            headers={
-                'X-API-Key': api_key,
-                'Idempotency-Key': idempotency_key,
-                'Content-Type': 'application/json'
-            },
-            json=order_data
-        )
-        
-        if response.status_code == 201:
-            return response.json()
-        elif response.status_code == 409:
-            # Idempotency conflict - retrieve existing order
-            return handle_idempotency_conflict(idempotency_key)
-        else:
-            error = response.json()
-            raise APIError(
-                code=error['error']['code'],
-                message=error['error']['message'],
-                request_id=error['error']['requestId']
-            )
-    except requests.RequestException as e:
-        raise NetworkError(str(e))
+BASE_URL = "https://novamed-feapidev.stackmod.info"
+
+def create_practitioner(practitioner_data):
+    """Create a practitioner with proper error handling."""
+    
+    response = requests.post(
+        f"{BASE_URL}/api/external/practitioner",
+        headers={
+            "x-api-key": API_KEY,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        json=practitioner_data
+    )
+    
+    result = response.json()
+    
+    if result.get('success'):
+        return result['data']
+    
+    error_message = result.get('error', {}).get('message', 'Unknown error')
+    
+    if response.status_code == 400:
+        raise ValueError(f"Validation error: {error_message}")
+    elif response.status_code == 401:
+        raise PermissionError("Invalid API key")
+    elif response.status_code == 404:
+        raise LookupError(error_message)
+    else:
+        raise Exception(f"API error: {error_message}")
 ```
 
-### JavaScript
+### Node.js
 
 ```javascript
-async function createOrder(orderData, apiKey, idempotencyKey) {
+const axios = require('axios');
+
+const BASE_URL = 'https://novamed-feapidev.stackmod.info';
+
+async function createPractitioner(practitionerData) {
   try {
-    const response = await fetch('https://api-sandbox.nimbus-os.com/orders', {
-      method: 'POST',
-      headers: {
-        'X-API-Key': apiKey,
-        'Idempotency-Key': idempotencyKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(orderData)
-    });
+    const response = await axios.post(
+      `${BASE_URL}/api/external/practitioner`,
+      practitionerData,
+      {
+        headers: {
+          'x-api-key': process.env.NOVAMED_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
+    );
     
-    if (response.status === 201) {
-      return await response.json();
-    } else if (response.status === 409) {
-      // Handle idempotency conflict
-      return handleIdempotencyConflict(idempotencyKey);
-    } else {
-      const error = await response.json();
-      throw new APIError(
-        error.error.code,
-        error.error.message,
-        error.error.requestId
-      );
+    if (response.data.success) {
+      return response.data.data;
     }
+    
+    throw new Error(response.data.error?.message || 'Unknown error');
+    
   } catch (error) {
-    if (error instanceof APIError) {
-      throw error;
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data?.error?.message;
+      
+      if (status === 400) {
+        throw new Error(`Validation error: ${message}`);
+      } else if (status === 401) {
+        throw new Error('Invalid API key');
+      } else if (status === 404) {
+        throw new Error(`Not found: ${message}`);
+      }
     }
-    throw new NetworkError(error.message);
+    
+    throw error;
   }
 }
 ```
 
-## Best Practices
-
-1. **Always use idempotency keys**: For all POST requests that create resources
-2. **Handle errors gracefully**: Check status codes and parse error responses
-3. **Log request IDs**: Include `requestId` in error logs for support
-4. **Implement retries**: Retry retryable errors with exponential backoff
-5. **Don't retry non-retryable errors**: 4xx errors indicate client issues
-6. **Handle idempotency conflicts**: Check for existing resources on 409
-
 ## Next Steps
 
-- [Learn about orders](/guides/orders)
 - [Learn about authentication](/guides/authentication)
+- [Set up webhooks](/guides/webhooks)
 - [Read the API reference](/api-reference)

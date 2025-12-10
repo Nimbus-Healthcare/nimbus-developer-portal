@@ -1,43 +1,41 @@
-# Redocly Realm Configuration for Nimbus OS Developer Portal
+# Redocly Realm Configuration for NovaMed Partner API Documentation
 
 apis:
   main:
     root: ./openapi-partner.yaml
-    title: Partner API
+    title: NovaMed Partner API
 
 # Logo configuration
 logo:
-  image: ./assets/logo.png
+  image: ./assets/logo.webp
   altText: Nimbus OS Logo
   favicon: ./assets/favicon/NIMBUS_favicon.ico
+
+# OpenAPI Reference configuration
+openapi:
+  hideSidebar: false
+  pagination: none
+  schemaExpansionLevel: 1
 
 # Navigation configuration
 navbar:
   items:
     - page: index.md
       label: Home
-    - page: guides/overview.md
-      label: Overview
-    - page: guides/quickstart.md
-      label: Quickstart
-    - page: guides/authentication.md
-      label: Authentication
-    - group: Guides
+    - group: Getting Started
       items:
-        - page: guides/orders.md
-          label: Orders
-        - page: guides/refills.md
-          label: Refills
-        - page: guides/tracking.md
-          label: Tracking
-        - page: guides/webhooks.md
-          label: Webhooks
+        - page: guides/overview.md
+          label: Overview
+        - page: guides/quickstart.md
+          label: Quickstart
+        - page: guides/authentication.md
+          label: Authentication
         - page: guides/errors-idempotency.md
-          label: Errors & Idempotency
-        - page: guides/environments.md
-          label: Environments
-    - page: api-reference.md
-      label: API Reference
+          label: Error Handling
+    - group: NovaMed API
+      items:
+        - page: openapi-partner.yaml
+          label: API Reference
     - page: changelog.md
       label: Changelog
     - page: api-terms.md
@@ -53,16 +51,14 @@ footer:
           label: Overview
         - page: guides/quickstart.md
           label: Quickstart
-        - page: api-reference.md
-          label: API Reference
     - group: Resources
       items:
         - page: changelog.md
           label: Changelog
         - page: api-terms.md
           label: API Terms
-        - href: https://redocly.com/docs
-          label: Redocly Docs
+        - href: https://documenter.getpostman.com/view/49178248/2sB3QML9Jg
+          label: Postman Docs
           external: true
     - group: Support
       items:
@@ -72,14 +68,27 @@ footer:
         - href: mailto:legal@nimbushealthcare.com
           label: Legal Inquiries
           external: true
-        - href: https://redocly.com/support
-          label: Redocly Support
-          external: true
+
+# Ignore internal documentation files from being scanned
+ignore:
+  - 'API-DISCOVERY-SUMMARY.md'
+  - 'DEPLOYMENT.md'
+  - 'ENGINEERING-HANDOFF.md'
+  - 'HANDOFF.md'
+  - 'INTERNAL-API-DOCUMENTATION-GUIDE.md'
+  - 'INTERNAL-APIS-NOTION.md'
+  - 'MIGRATION-COMPLETE.md'
+  - 'NOVAMED-API-DOCUMENTATION-PLAN.md'
+  - 'PARTNER-API-DOCUMENTATION-PLAN.md'
+  - 'README.md'
+  - 'TESTING.md'
+  - 'THEME.md'
+  - 'Nimbus OS Partner API Documentation*.md'
+  - 'openapi.yaml'
+  - 'guides/orders.md'
+  - 'guides/tracking.md'
 
 # SEO configuration
 seo:
-  title: Nimbus OS Developer Portal
-  description: API documentation and guides for integrating with Nimbus OS
-
-# Theme customization is done via @theme/styles.css
-# See @theme/styles.css for Nimbus brand colors (teal #0ED2C3)
+  title: NovaMed Partner API Documentation
+  description: API documentation for integrating with NovaMed - healthcare partner integration platform

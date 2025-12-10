@@ -1,163 +1,224 @@
 openapi: 3.1.0
 
 info:
-  title: Nimbus OS Partner API
+  title: NovaMed Partner API
   version: 1.0.0
   description: |
-    Partner API for pharmacy operations integration with Nimbus OS.
+    The NovaMed Partner API enables healthcare partners to integrate with NovaMed for patient care management, prescription fulfillment, and order tracking.
     
-    This API enables partners to receive real-time updates about pharmacy operations including:
-    - Shipment creation and tracking
-    - Prescription status updates
-    - Medication order status changes
-    - Refill request management
+    **Authentication:** All requests require an `x-api-key` header with your API key.
     
-    **Note**: This API is for pharmacy operations only. Internal operations (clinic management, 
-    practitioner onboarding) are not exposed to partners.
+    **Base URLs:**
+    - Development: `https://novamed-feapidev.stackmod.info`
+    - Production: `https://feapi.novamed.care`
     
-    ## Authentication
-    
-    All API requests require an API key sent in the `X-API-Key` header. Contact 
-    api@nimbus-os.com to obtain your API key.
-    
-    ## Base URLs
-    
-    - **Sandbox**: `https://api-sandbox.nimbus-os.com/api/external`
-    - **Production**: `https://api.nimbus-os.com/api/external`
-    
-    ## Webhooks
-    
-    Partners can register webhook endpoints to receive real-time event notifications. 
-    Webhooks are sent via HTTPS POST requests to your registered endpoint.
-    
+    For detailed guides, see the [Getting Started](/guides/quickstart) documentation.
   contact:
-    name: Nimbus OS API Support
+    name: NovaMed API Support
     email: api@nimbus-os.com
   license:
     name: API License Terms & Conditions
     url: https://developer.nimbus-os.com/api-terms
 
 servers:
-  - url: https://api-sandbox.nimbus-os.com/api/external
-    description: Sandbox environment for testing
-  - url: https://api.nimbus-os.com/api/external
+  - url: https://novamed-feapidev.stackmod.info
+    description: Development environment
+  - url: https://feapi.novamed.care
     description: Production environment
 
 security:
   - ApiKeyAuth: []
 
 tags:
-  - name: Webhooks
-    description: Webhook configuration for receiving pharmacy event notifications
+  - name: Practitioners
+    description: Manage practitioners (doctors, veterinarians) in the system
+  - name: Patients
+    description: Patient registration and management
+  - name: Medication Requests
+    description: Medication order management
   - name: Refills
     description: Prescription refill request management
+  - name: Webhooks
+    description: Webhook configuration for receiving event notifications
 
 paths:
-  /webhook:
+  /api/external/practitioner:
     post:
       tags:
-        - Webhooks
-      summary: Register a webhook endpoint
+        - Practitioners
+      summary: Create Practitioner
       description: |
-        Register a webhook URL to receive real-time pharmacy event notifications.
+        Creates a new practitioner (doctor or veterinarian) in the system. This endpoint is used to onboard practitioners by collecting their personal, professional, and contact information.
         
-        Once registered, you will receive webhook events for:
-        - Shipment creation and updates
-        - Prescription status changes
-        - Medication order status updates
-        
-        Webhooks are sent via HTTPS POST requests with an `X-API-Key` header for authentication.
-      operationId: createWebhook
+        **Notes:**
+        - All required fields must be provided and valid
+        - `assigned_clinic` must reference an existing clinic UUID
+        - Validation errors will return descriptive messages for each field
+      operationId: createPractitioner
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WebhookRequest'
+              $ref: '#/components/schemas/PractitionerRequest'
             examples:
               basic:
-                summary: Basic webhook registration
+                summary: Create a new practitioner
                 value:
-                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
-                  webhook_url: "https://partner.example.com/webhooks/nimbus"
+                  first_name: "Sarah"
+                  last_name: "Johnson"
+                  email: "dr.johnson@partnerclinic.com"
+                  phone: "+1-555-0123"
+                  npi_number: "1234567890"
+                  dea_number: "FJ1234563"
+                  license_number: "MD-12345"
+                  license_state: "CA"
+                  signature_image: "base64_encoded_image_string"
+                  assigned_clinic: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '200':
-          description: Webhook registered successfully
+          description: Practitioner created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookResponse'
+                $ref: '#/components/schemas/PractitionerResponse'
               examples:
                 success:
-                  summary: Successful webhook registration
+                  summary: Successful creation
                   value:
                     success: true
                     data:
-                      webhook_id: "660e8400-e29b-41d4-a716-446655440001"
-                    message: "Webhook created successfully"
+                      practitioner_id: "660e8400-e29b-41d4-a716-446655440001"
+                    message: "Practitioner created successfully"
         '400':
-          description: Bad request (validation error or clinic not found)
+          description: Bad request (validation error)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                validationError:
-                  summary: Validation error
-                  value:
-                    success: false
-                    error:
-                      message: "Clinic ID must be a valid UUID."
-                clinicNotFound:
-                  summary: Clinic not found
-                  value:
-                    success: false
-                    error:
-                      message: "Clinic not found"
         '401':
           description: Unauthorized (missing or invalid API key)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorized:
-                  summary: Unauthorized
-                  value:
-                    success: false
-                    error:
-                      message: "Unauthorized"
-    
-    delete:
+
+  /api/external/patient:
+    post:
       tags:
-        - Webhooks
-      summary: Delete a webhook endpoint
+        - Patients
+      summary: Create Patient
       description: |
-        Remove a webhook configuration. The webhook will stop receiving events immediately.
-      operationId: deleteWebhook
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Webhook ID to delete
-          schema:
-            type: string
-            format: uuid
-            example: "660e8400-e29b-41d4-a716-446655440001"
+        Register a new patient in NovaMed under your partner account.
+        
+        **Notes:**
+        - All required fields must be provided
+        - `clinic_id` must reference an existing clinic UUID
+        - Address information is required for shipping
+      operationId: createPatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+            examples:
+              basic:
+                summary: Create a new patient
+                value:
+                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
+                  first_name: "John"
+                  last_name: "Smith"
+                  date_of_birth: "1985-03-15"
+                  gender: "male"
+                  email: "john.smith@email.com"
+                  phone: "+1-555-0199"
+                  address_line1: "123 Main Street"
+                  address_line2: "Apt 4B"
+                  city: "San Francisco"
+                  state: "CA"
+                  zip: "94102"
       responses:
         '200':
-          description: Webhook deleted successfully
+          description: Patient created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Webhook deleted successfully"
+                $ref: '#/components/schemas/PatientResponse'
+              examples:
+                success:
+                  summary: Successful creation
+                  value:
+                    success: true
+                    data:
+                      patient_id: "770e8400-e29b-41d4-a716-446655440002"
+                    message: "Patient created successfully"
+        '400':
+          description: Bad request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/external/medication-request:
+    post:
+      tags:
+        - Medication Requests
+      summary: Create Medication Request
+      description: |
+        Create a new medication request for a patient. This endpoint initiates the prescription and fulfillment process.
+        
+        **Notes:**
+        - Patient and practitioner must already exist in the system
+        - Medication details must be valid
+        - The request will be validated against the clinic's available medications
+      operationId: createMedicationRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationRequest'
+            examples:
+              basic:
+                summary: Create medication request
+                value:
+                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
+                  patient_id: "770e8400-e29b-41d4-a716-446655440002"
+                  practitioner_id: "660e8400-e29b-41d4-a716-446655440001"
+                  medication_name: "Testosterone Cypionate"
+                  medication_strength: "200mg/ml"
+                  quantity: 1
+                  refills: 3
+                  days_supply: 30
+                  instructions: "Inject 0.5ml (100mg) intramuscularly twice weekly"
+      responses:
+        '200':
+          description: Medication request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationRequestResponse'
+              examples:
+                success:
+                  summary: Successful creation
+                  value:
+                    success: true
+                    data:
+                      medication_request_id: "880e8400-e29b-41d4-a716-446655440003"
+                    message: "Medication request created successfully"
+        '400':
+          description: Bad request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
           content:
@@ -165,28 +226,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Webhook not found
+          description: Patient or practitioner not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  summary: Webhook not found
-                  value:
-                    success: false
-                    error:
-                      message: "Webhook not found"
 
-  /refill-request:
+  /api/external/refill-request:
     post:
       tags:
         - Refills
-      summary: Request a prescription refill
+      summary: Create Refill Request
       description: |
         Request a refill for an existing medication order that has been shipped or delivered.
         
-        **Eligibility Requirements**:
+        **Eligibility Requirements:**
         - Medication must have been shipped or delivered
         - Refills must be authorized on the original prescription
         - No pending refill request already exists
@@ -203,8 +257,7 @@ paths:
               basic:
                 summary: Basic refill request
                 value:
-                  medication_request_id: "770e8400-e29b-41d4-a716-446655440002"
-                  shipment_group_id: "optional-group-id"
+                  medication_request_id: "880e8400-e29b-41d4-a716-446655440003"
       responses:
         '200':
           description: Refill request created successfully
@@ -219,8 +272,8 @@ paths:
                     success: true
                     message: "Refill request was created successfully."
                     data:
-                      refill_request_id: "880e8400-e29b-41d4-a716-446655440003"
-                      medication_order_id: "990e8400-e29b-41d4-a716-446655440004"
+                      refill_request_id: "990e8400-e29b-41d4-a716-446655440004"
+                      medication_order_id: "aa0e8400-e29b-41d4-a716-446655440005"
         '400':
           description: Bad request
           content:
@@ -253,15 +306,291 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/external/webhook:
+    post:
+      tags:
+        - Webhooks
+      summary: Register Webhook
+      description: |
+        Register a webhook URL to receive real-time event notifications.
+        
+        Once registered, you will receive webhook events for:
+        - Shipment creation and updates
+        - Prescription status changes
+        - Medication order status updates
+        
+        Webhooks are sent via HTTPS POST requests with an `x-api-key` header for authentication.
+      operationId: createWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookRequest'
+            examples:
+              basic:
+                summary: Basic webhook registration
+                value:
+                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
+                  webhook_url: "https://partner.example.com/webhooks/novamed"
+      responses:
+        '200':
+          description: Webhook registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+              examples:
+                success:
+                  summary: Successful webhook registration
+                  value:
+                    success: true
+                    data:
+                      webhook_id: "bb0e8400-e29b-41d4-a716-446655440006"
+                    message: "Webhook created successfully"
+        '400':
+          description: Bad request (validation error or clinic not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized (missing or invalid API key)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Webhooks
+      summary: Delete Webhook
+      description: |
+        Remove a webhook configuration. The webhook will stop receiving events immediately.
+      operationId: deleteWebhook
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Webhook ID to delete
+          schema:
+            type: string
+            format: uuid
+            example: "bb0e8400-e29b-41d4-a716-446655440006"
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Webhook deleted successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: X-API-Key
+      name: x-api-key
       description: Partner API key for authentication. Contact api@nimbus-os.com to obtain your API key.
 
   schemas:
+    # Request Schemas
+    PractitionerRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - npi_number
+        - assigned_clinic
+      properties:
+        first_name:
+          type: string
+          description: Practitioner's first name
+          example: "Sarah"
+        last_name:
+          type: string
+          description: Practitioner's last name
+          example: "Johnson"
+        email:
+          type: string
+          format: email
+          description: Practitioner's email address
+          example: "dr.johnson@partnerclinic.com"
+        phone:
+          type: string
+          description: Practitioner's phone number
+          example: "+1-555-0123"
+        npi_number:
+          type: string
+          description: National Provider Identifier (10 digits)
+          example: "1234567890"
+        dea_number:
+          type: string
+          description: DEA registration number
+          example: "FJ1234563"
+        license_number:
+          type: string
+          description: State medical license number
+          example: "MD-12345"
+        license_state:
+          type: string
+          description: State of licensure (2-letter code)
+          example: "CA"
+        signature_image:
+          type: string
+          description: Base64 encoded signature image
+        assigned_clinic:
+          type: string
+          format: uuid
+          description: UUID of the clinic to assign this practitioner
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    PatientRequest:
+      type: object
+      required:
+        - clinic_id
+        - first_name
+        - last_name
+        - date_of_birth
+        - email
+      properties:
+        clinic_id:
+          type: string
+          format: uuid
+          description: UUID of the clinic
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        first_name:
+          type: string
+          description: Patient's first name
+          example: "John"
+        last_name:
+          type: string
+          description: Patient's last name
+          example: "Smith"
+        date_of_birth:
+          type: string
+          format: date
+          description: Patient's date of birth (YYYY-MM-DD)
+          example: "1985-03-15"
+        gender:
+          type: string
+          enum: [male, female, other]
+          description: Patient's gender
+          example: "male"
+        email:
+          type: string
+          format: email
+          description: Patient's email address
+          example: "john.smith@email.com"
+        phone:
+          type: string
+          description: Patient's phone number
+          example: "+1-555-0199"
+        address_line1:
+          type: string
+          description: Street address line 1
+          example: "123 Main Street"
+        address_line2:
+          type: string
+          description: Street address line 2 (optional)
+          example: "Apt 4B"
+        city:
+          type: string
+          description: City
+          example: "San Francisco"
+        state:
+          type: string
+          description: State (2-letter code)
+          example: "CA"
+        zip:
+          type: string
+          description: ZIP/Postal code
+          example: "94102"
+
+    MedicationRequest:
+      type: object
+      required:
+        - clinic_id
+        - patient_id
+        - practitioner_id
+        - medication_name
+        - quantity
+      properties:
+        clinic_id:
+          type: string
+          format: uuid
+          description: UUID of the clinic
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        patient_id:
+          type: string
+          format: uuid
+          description: UUID of the patient
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        practitioner_id:
+          type: string
+          format: uuid
+          description: UUID of the prescribing practitioner
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        medication_name:
+          type: string
+          description: Name of the medication
+          example: "Testosterone Cypionate"
+        medication_strength:
+          type: string
+          description: Medication strength/concentration
+          example: "200mg/ml"
+        quantity:
+          type: integer
+          description: Quantity to dispense
+          example: 1
+        refills:
+          type: integer
+          description: Number of refills authorized
+          example: 3
+        days_supply:
+          type: integer
+          description: Days supply per fill
+          example: 30
+        instructions:
+          type: string
+          description: Dosing instructions for the patient
+          example: "Inject 0.5ml (100mg) intramuscularly twice weekly"
+
+    RefillRequest:
+      type: object
+      required:
+        - medication_request_id
+      properties:
+        medication_request_id:
+          type: string
+          format: uuid
+          description: UUID of the medication request to refill
+          example: "880e8400-e29b-41d4-a716-446655440003"
+        shipment_group_id:
+          type: string
+          description: Optional shipment group ID for grouping multiple refills
+          example: "optional-group-id"
+
     WebhookRequest:
       type: object
       required:
@@ -277,9 +606,10 @@ components:
           type: string
           format: uri
           description: HTTPS URL where webhook events will be sent
-          example: "https://partner.example.com/webhooks/nimbus"
-    
-    WebhookResponse:
+          example: "https://partner.example.com/webhooks/novamed"
+
+    # Response Schemas
+    PractitionerResponse:
       type: object
       properties:
         success:
@@ -288,30 +618,51 @@ components:
         data:
           type: object
           properties:
-            webhook_id:
+            practitioner_id:
               type: string
               format: uuid
-              description: Unique identifier for the registered webhook
+              description: Unique identifier for the created practitioner
               example: "660e8400-e29b-41d4-a716-446655440001"
         message:
           type: string
-          example: "Webhook created successfully"
-    
-    RefillRequest:
+          example: "Practitioner created successfully"
+
+    PatientResponse:
       type: object
-      required:
-        - medication_request_id
       properties:
-        medication_request_id:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            patient_id:
+              type: string
+              format: uuid
+              description: Unique identifier for the created patient
+              example: "770e8400-e29b-41d4-a716-446655440002"
+        message:
           type: string
-          format: uuid
-          description: UUID of the medication request to refill
-          example: "770e8400-e29b-41d4-a716-446655440002"
-        shipment_group_id:
+          example: "Patient created successfully"
+
+    MedicationRequestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            medication_request_id:
+              type: string
+              format: uuid
+              description: Unique identifier for the medication request
+              example: "880e8400-e29b-41d4-a716-446655440003"
+        message:
           type: string
-          description: Optional shipment group ID for grouping multiple refills
-          example: "optional-group-id"
-    
+          example: "Medication request created successfully"
+
     RefillResponse:
       type: object
       properties:
@@ -328,13 +679,31 @@ components:
               type: string
               format: uuid
               description: Unique identifier for the refill request
-              example: "880e8400-e29b-41d4-a716-446655440003"
+              example: "990e8400-e29b-41d4-a716-446655440004"
             medication_order_id:
               type: string
               format: uuid
-              description: Unique identifier for the new medication order created for the refill
-              example: "990e8400-e29b-41d4-a716-446655440004"
-    
+              description: Unique identifier for the new medication order
+              example: "aa0e8400-e29b-41d4-a716-446655440005"
+
+    WebhookResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            webhook_id:
+              type: string
+              format: uuid
+              description: Unique identifier for the registered webhook
+              example: "bb0e8400-e29b-41d4-a716-446655440006"
+        message:
+          type: string
+          example: "Webhook created successfully"
+
     ErrorResponse:
       type: object
       properties:
@@ -347,8 +716,12 @@ components:
             message:
               type: string
               description: Human-readable error message
-              example: "Clinic not found"
-    
+              example: "Validation error"
+            details:
+              type: object
+              description: Additional error details
+              example: {}
+
     # Webhook Event Schemas (for reference - these are what partners receive)
     WebhookEvent:
       type: object
@@ -364,7 +737,7 @@ components:
         event_data:
           type: object
           description: Event-specific data payload
-    
+
     ShipmentCreatedEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookEvent'
@@ -385,7 +758,7 @@ components:
                   items:
                     type: string
                     format: uuid
-                  description: Array of medication order IDs included in this shipment
+                  description: Array of medication order IDs in this shipment
                 shipment_status:
                   type: string
                   description: Current status of the shipment
@@ -402,7 +775,6 @@ components:
                   type: string
                   format: uri
                   description: URL to track the shipment
-                  example: "https://tracking.example.com/1Z999AA10123456784"
                 shipping_partner:
                   type: string
                   description: Shipping carrier name
@@ -411,57 +783,7 @@ components:
                   type: string
                   description: Delivery method
                   example: "next-day"
-                delivery_location:
-                  type: object
-                  description: Delivery address
-                  properties:
-                    address:
-                      type: string
-                    city:
-                      type: string
-                    state:
-                      type: string
-                    postal_code:
-                      type: string
-                notes:
-                  type: string
-                  description: Additional shipment notes
-                barcode_url:
-                  type: string
-                  format: uri
-                  description: URL to shipment barcode image
-                shipping_label:
-                  type: string
-                  format: uri
-                  description: URL to shipping label PDF
-    
-    ShipmentCancelledEvent:
-      allOf:
-        - $ref: '#/components/schemas/WebhookEvent'
-        - type: object
-          properties:
-            event_name:
-              type: string
-              example: "shipment:cancelled"
-            event_data:
-              type: object
-              properties:
-                shipment_id:
-                  type: string
-                  format: uuid
-                medication_orders:
-                  type: array
-                  items:
-                    type: string
-                    format: uuid
-                cancellation_reason:
-                  type: string
-                  description: Reason for cancellation
-                  example: "Patient request"
-                cancelled_at:
-                  type: string
-                  format: date-time
-    
+
     MedicationUpdatedEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookEvent'
@@ -499,12 +821,6 @@ components:
                 updated_at:
                   type: string
                   format: date-time
-                pharmetika_status:
-                  type: string
-                  description: Status from Pharmetika system
                 tracking_number:
                   type: string
                   description: Tracking number (if shipped)
-                notes:
-                  type: string
-                  description: Additional status notes
