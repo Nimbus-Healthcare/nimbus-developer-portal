@@ -11,7 +11,7 @@ The NovaMed Partner API provides two environments: Development for testing and P
 
 | Environment | Base URL |
 |-------------|----------|
-| **Development** | `https://novamed-feapidev.stackmod.info` |
+| **Development** | `https://novamed-feapidev.nimbushealthcaretest.com` |
 | **Production** | `https://feapi.novamed.care` |
 
 ---
@@ -20,7 +20,7 @@ The NovaMed Partner API provides two environments: Development for testing and P
 
 Use the development environment for testing your integration.
 
-**Base URL**: `https://novamed-feapidev.stackmod.info`
+**Base URL**: `https://novamed-feapidev.nimbushealthcaretest.com`
 
 ### Features
 
@@ -42,7 +42,7 @@ Use the development environment for testing your integration.
 3. Start testing with your assigned clinic ID
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-dev-api-key" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -166,7 +166,7 @@ Register webhooks for each environment:
 
 ```bash
 # Development webhook
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-dev-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -217,7 +217,7 @@ Before moving from Development to Production:
 
 | Feature | Development | Production |
 |---------|-------------|------------|
-| **Base URL** | `novamed-feapidev.stackmod.info` | `feapi.novamed.care` |
+| **Base URL** | `novamed-feapidev.nimbushealthcaretest.com` | `feapi.novamed.care` |
 | **Data** | Test data | Real patient data |
 | **Orders** | No real shipments | Real shipments |
 | **PHI** | Not allowed | Allowed (with BAA) |
@@ -241,7 +241,7 @@ Before moving from Development to Production:
 // config.js
 const config = {
   development: {
-    baseUrl: 'https://novamed-feapidev.stackmod.info',
+    baseUrl: 'https://novamed-feapidev.nimbushealthcaretest.com',
     apiKey: process.env.NOVAMED_DEV_API_KEY,
     webhookUrl: 'https://dev.yourapp.com/webhooks/novamed'
   },

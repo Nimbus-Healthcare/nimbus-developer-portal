@@ -32,7 +32,7 @@ API credentials are provided by the NovaMed team upon partner approval:
 Let's create a practitioner to verify your setup:
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -62,7 +62,7 @@ If successful, you'll receive a JSON response:
 Now let's create a patient:
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/patient \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/patient \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -98,7 +98,7 @@ The response includes the created patient:
 Now create a medication request for the patient:
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/medication-request \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-request \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -132,7 +132,7 @@ Response:
 Register a webhook to receive real-time notifications:
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -201,7 +201,7 @@ The resource doesn't exist. Check:
 
 | Environment | Base URL |
 |-------------|----------|
-| Development | `https://novamed-feapidev.stackmod.info` |
+| Development | `https://novamed-feapidev.nimbushealthcaretest.com` |
 | Production | `https://feapi.novamed.care` |
 
 **Important**: Do not send PHI to the Development environment.

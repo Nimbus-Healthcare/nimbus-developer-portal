@@ -12,7 +12,7 @@ The NovaMed Integration API is a set of HTTP endpoints that help your app integr
 <div class="env-table">
   <div class="env-row">
     <span class="env-label">Development</span>
-    <code class="env-url">https://novamed-feapidev.stackmod.info</code>
+    <code class="env-url">https://novamed-feapidev.nimbushealthcaretest.com</code>
   </div>
   <div class="env-row">
     <span class="env-label">Production</span>
