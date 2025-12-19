@@ -28,7 +28,7 @@ Webhooks are HTTP callbacks that allow NovaMed to notify your system when specif
 
 | Environment | URL |
 |-------------|-----|
-| **Development** | `https://novamed-feapidev.stackmod.info` |
+| **Development** | `https://novamed-feapidev.nimbushealthcaretest.com` |
 | **Production** | `https://feapi.novamed.care` |
 
 ---
@@ -40,7 +40,7 @@ Webhooks are HTTP callbacks that allow NovaMed to notify your system when specif
 Register your webhook URL with NovaMed:
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -327,7 +327,7 @@ if __name__ == '__main__':
 To remove a registered webhook:
 
 ```bash
-curl -X DELETE https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X DELETE https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -439,7 +439,7 @@ If your endpoint returns a non-200 status code, the webhook will be retried. To 
 
 3. **Register webhook** with the ngrok URL:
    ```bash
-   curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+   curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
      -H "x-api-key: your-api-key" \
      -H "Content-Type: application/json" \
      -d '{
@@ -498,7 +498,7 @@ If your endpoint returns a non-200 status code, the webhook will be retried. To 
 ## Support
 
 - **API Support**: api@nimbus-os.com
-- **Development Environment**: `https://novamed-feapidev.stackmod.info`
+- **Development Environment**: `https://novamed-feapidev.nimbushealthcaretest.com`
 - **Production Environment**: `https://feapi.novamed.care`
 
 For more information, see the [API Reference](/api-reference).

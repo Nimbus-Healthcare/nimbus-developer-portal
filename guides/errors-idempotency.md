@@ -268,7 +268,7 @@ def request_refill(medication_request_id):
 ```python
 import requests
 
-BASE_URL = "https://novamed-feapidev.stackmod.info"
+BASE_URL = "https://novamed-feapidev.nimbushealthcaretest.com"
 
 def create_practitioner(practitioner_data):
     """Create a practitioner with proper error handling."""
@@ -305,7 +305,7 @@ def create_practitioner(practitioner_data):
 ```javascript
 const axios = require('axios');
 
-const BASE_URL = 'https://novamed-feapidev.stackmod.info';
+const BASE_URL = 'https://novamed-feapidev.nimbushealthcaretest.com';
 
 async function createPractitioner(practitionerData) {
   try {

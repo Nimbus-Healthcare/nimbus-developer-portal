@@ -14,7 +14,7 @@ We will provide an **API Key** and **Clinic Id**. All requests need to pass a he
 Include your API key in every request:
 
 ```bash
-curl https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json"
@@ -100,7 +100,7 @@ Always use HTTPS. The API requires TLS 1.2 or higher. Never send API keys over u
 
 | Environment | URL | PHI Allowed |
 |-------------|-----|-------------|
-| Development | `https://novamed-feapidev.stackmod.info` | No |
+| Development | `https://novamed-feapidev.nimbushealthcaretest.com` | No |
 | Production | `https://feapi.novamed.care` | Yes (with BAA) |
 
 **Important**: Do not send PHI to the Development environment.
@@ -160,7 +160,7 @@ The request is invalid:
 ### Create a Practitioner
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
@@ -176,7 +176,7 @@ curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
 ### Create a Patient
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/patient \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/patient \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \

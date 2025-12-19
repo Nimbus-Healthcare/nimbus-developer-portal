@@ -9,7 +9,7 @@ info:
     **Authentication:** All requests require an `x-api-key` header with your API key.
     
     **Base URLs:**
-    - Development: `https://novamed-feapidev.stackmod.info`
+    - Development: `https://novamed-feapidev.nimbushealthcaretest.com`
     - Production: `https://feapi.novamed.care`
     
     For detailed guides, see the [Getting Started](/guides/quickstart) documentation.
@@ -21,7 +21,7 @@ info:
     url: https://developer.nimbus-os.com/api-terms
 
 servers:
-  - url: https://novamed-feapidev.stackmod.info
+  - url: https://novamed-feapidev.nimbushealthcaretest.com
     description: Development environment
   - url: https://feapi.novamed.care
     description: Production environment

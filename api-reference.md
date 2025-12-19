@@ -11,7 +11,7 @@ Complete reference documentation for all NovaMed Partner API endpoints.
 
 | Environment | URL |
 |-------------|-----|
-| **Development** | `https://novamed-feapidev.stackmod.info` |
+| **Development** | `https://novamed-feapidev.nimbushealthcaretest.com` |
 | **Production** | `https://feapi.novamed.care` |
 
 ## Authentication
@@ -19,7 +19,7 @@ Complete reference documentation for all NovaMed Partner API endpoints.
 All API requests require an API key in the `x-api-key` header:
 
 ```bash
-curl https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json"
@@ -46,7 +46,7 @@ Manage practitioners (doctors, veterinarians) in the NovaMed platform.
 ### Create Practitioner
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -82,7 +82,7 @@ Register and manage patients in the NovaMed platform.
 ### Create Patient
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/patient \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/patient \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -118,7 +118,7 @@ Create medication orders for patients.
 ### Create Medication Request
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/medication-request \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-request \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +149,7 @@ Request prescription refills for existing medication orders.
 ### Create Refill Request
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/refill-request \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/refill-request \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -183,7 +183,7 @@ Register webhook endpoints to receive real-time event notifications.
 ### Register Webhook
 
 ```bash
-curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -195,7 +195,7 @@ curl -X POST https://novamed-feapidev.stackmod.info/api/external/webhook \
 ### Delete Webhook
 
 ```bash
-curl -X DELETE https://novamed-feapidev.stackmod.info/api/external/webhook \
+curl -X DELETE https://novamed-feapidev.nimbushealthcaretest.com/api/external/webhook \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{

@@ -24,7 +24,7 @@ Use the appropriate base URL for your environment:
 <div class="env-table">
   <div class="env-row">
     <span class="env-label">Development</span>
-    <code class="env-url">https://novamed-feapidev.stackmod.info</code>
+    <code class="env-url">https://novamed-feapidev.nimbushealthcaretest.com</code>
   </div>
   <div class="env-row">
     <span class="env-label">Production</span>
@@ -37,7 +37,7 @@ Use the appropriate base URL for your environment:
 We will provide an **API Key** and **Clinic Id**. All requests need to pass a header `x-api-key` with the provided value.
 
 ```bash
-curl https://novamed-feapidev.stackmod.info/api/external/practitioner \
+curl https://novamed-feapidev.nimbushealthcaretest.com/api/external/practitioner \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json"
