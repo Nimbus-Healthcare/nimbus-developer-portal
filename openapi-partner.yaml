@@ -895,17 +895,59 @@ components:
           type: string
           description: Type of webhook event
           enum:
+            - medication_order:verified
+            - medication_order:submitted
+            - medication_order:acknowledged
+            - medication_order:filled
             - shipment:created
             - shipment:cancelled
-            - medication:updated
+            - practitioner:activated
         event_data:
           type: object
           description: Event-specific data payload
+
+    MedicationOrderEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookEvent'
+        - type: object
+          description: Webhook event for medication order status changes
+          properties:
+            event_name:
+              type: string
+              example: "medication_order:verified"
+            event_data:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: Unique identifier for the medication order
+                  example: "a7570e3c-4338-485f-9465-ee09793c2d46"
+                clinic_id:
+                  type: string
+                  format: uuid
+                  description: Clinic identifier
+                  example: "2a7d8da1-2f69-46e1-87a4-04490ab73c41"
+                patient_id:
+                  type: string
+                  format: uuid
+                  description: Patient identifier
+                  example: "8456ce26-05db-4fcd-bebd-495bd7bc04df"
+                practitioner_id:
+                  type: string
+                  format: uuid
+                  description: Practitioner identifier
+                  example: "a7570e3c-4338-485f-9465-ee09793c2d46"
+                rx_number:
+                  type: string
+                  description: Prescription number (not available for all events)
+                  example: "123456"
 
     ShipmentCreatedEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookEvent'
         - type: object
+          description: Webhook event when a shipment is created
           properties:
             event_name:
               type: string
@@ -913,78 +955,86 @@ components:
             event_data:
               type: object
               properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: Unique identifier for the medication order
+                  example: "a7570e3c-4338-485f-9465-ee09793c2d46"
+                clinic_id:
+                  type: string
+                  format: uuid
+                  description: Clinic identifier
+                  example: "2a7d8da1-2f69-46e1-87a4-04490ab73c41"
+                patient_id:
+                  type: string
+                  format: uuid
+                  description: Patient identifier
+                  example: "8456ce26-05db-4fcd-bebd-495bd7bc04df"
+                practitioner_id:
+                  type: string
+                  format: uuid
+                  description: Practitioner identifier
+                  example: "a7570e3c-4338-485f-9465-ee09793c2d46"
+                rx_number:
+                  type: string
+                  description: Prescription number
+                  example: "123456"
+                shipping_label:
+                  type: string
+                  format: uri
+                  description: URL to the shipping label PDF
+                  example: "https://example.com/shipping-label.pdf"
                 shipment_id:
                   type: string
                   format: uuid
                   description: Unique identifier for the shipment
-                medication_orders:
-                  type: array
-                  items:
-                    type: string
-                    format: uuid
-                  description: Array of medication order IDs in this shipment
-                shipment_status:
+                  example: "8456ce26-05db-4fcd-bebd-495bd7bc04df"
+                shipment_provider:
                   type: string
-                  description: Current status of the shipment
-                  example: "pending"
-                shipped_at:
-                  type: string
-                  format: date-time
-                  description: Timestamp when shipment was created
-                tracking_number:
-                  type: string
-                  description: Carrier tracking number
-                  example: "1Z999AA10123456784"
+                  description: Shipping provider name
+                  example: "Ameriship"
                 tracking_url:
                   type: string
                   format: uri
                   description: URL to track the shipment
-                shipping_partner:
-                  type: string
-                  description: Shipping carrier name
-                  example: "FedEx"
-                delivery_method:
-                  type: string
-                  description: Delivery method
-                  example: "next-day"
+                  example: "https://example.com/tracking"
 
-    MedicationUpdatedEvent:
+    PractitionerActivatedEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookEvent'
         - type: object
+          description: Webhook event when a practitioner is activated
           properties:
             event_name:
               type: string
-              example: "medication:updated"
+              example: "practitioner:activated"
             event_data:
               type: object
               properties:
-                medication_order_id:
+                practitioner_id:
                   type: string
                   format: uuid
-                prescription_id:
+                  description: Unique identifier for the practitioner
+                  example: "4f407bca-2a9b-4dde-8240-e53331a5a986"
+                practitioner_name:
                   type: string
-                  format: uuid
-                medication_request_id:
+                  description: Full name of the practitioner
+                  example: "Dr. John Smith"
+                practitioner_email:
                   type: string
-                  format: uuid
-                status:
+                  format: email
+                  description: Practitioner's email address
+                  example: "dr.smith@clinic.com"
+                practitioner_phone:
                   type: string
-                  description: New status of the medication
-                  enum:
-                    - validated
-                    - submitted
-                    - filled
-                    - shipped
-                    - delivered
-                    - cancelled
-                  example: "shipped"
-                previous_status:
+                  nullable: true
+                  description: Practitioner's phone number
+                  example: "+1-555-0123"
+                practitioner_npi:
                   type: string
-                  description: Previous status before update
-                updated_at:
+                  description: Practitioner's NPI number
+                  example: "1234567890"
+                practitioner_status:
                   type: string
-                  format: date-time
-                tracking_number:
-                  type: string
-                  description: Tracking number (if shipped)
+                  description: Practitioner's current status
+                  example: "active"
