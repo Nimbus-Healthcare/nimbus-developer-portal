@@ -78,32 +78,27 @@ Your webhook endpoint must:
 
 NovaMed sends the following webhook events:
 
-### Order Status Events
+### Medication Order Events
 
 | Event | Description |
 |-------|-------------|
-| `order:created` | New order has been created |
-| `order:processing` | Order is being processed |
-| `order:shipped` | Order has been shipped |
-| `order:delivered` | Order has been delivered |
-| `order:cancelled` | Order has been cancelled |
+| `medication_order:verified` | Medication order has been verified |
+| `medication_order:submitted` | Medication order has been submitted |
+| `medication_order:acknowledged` | Medication order has been acknowledged |
+| `medication_order:filled` | Medication order has been filled |
 
-### Medication Request Events
-
-| Event | Description |
-|-------|-------------|
-| `medication_request:created` | New medication request created |
-| `medication_request:approved` | Medication request approved |
-| `medication_request:filled` | Medication has been filled |
-| `medication_request:cancelled` | Medication request cancelled |
-
-### Refill Events
+### Shipment Events
 
 | Event | Description |
 |-------|-------------|
-| `refill:requested` | Refill request submitted |
-| `refill:approved` | Refill request approved |
-| `refill:denied` | Refill request denied |
+| `shipment:created` | Shipment has been created (includes tracking info) |
+| `shipment:cancelled` | Shipment has been cancelled |
+
+### Practitioner Events
+
+| Event | Description |
+|-------|-------------|
+| `practitioner:activated` | Practitioner account has been activated |
 
 ---
 
@@ -113,57 +108,63 @@ All webhook events follow this structure:
 
 ```json
 {
-  "event_type": "order:shipped",
-  "event_id": "evt_abc123xyz",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
-  "data": {
+  "event_name": "medication_order:verified",
+  "event_data": {
     // Event-specific data
   }
 }
 ```
 
-### Order Shipped Event Example
+### Medication Order Event Example
 
 ```json
 {
-  "event_type": "order:shipped",
-  "event_id": "evt_abc123xyz",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
-  "data": {
-    "order_id": "ord_12345",
-    "patient_id": "pat_67890",
-    "medication_request_id": "med_req_11111",
-    "tracking_number": "1Z999AA10123456784",
-    "carrier": "UPS",
-    "estimated_delivery": "2025-01-18",
-    "shipping_address": {
-      "line1": "123 Main Street",
-      "city": "San Francisco",
-      "state": "CA",
-      "zip": "94102"
-    }
+  "event_name": "medication_order:verified",
+  "event_data": {
+    "id": "a7570e3c-4338-485f-9465-ee09793c2d46",
+    "clinic_id": "2a7d8da1-2f69-46e1-87a4-04490ab73c41",
+    "patient_id": "8456ce26-05db-4fcd-bebd-495bd7bc04df",
+    "practitioner_id": "a7570e3c-4338-485f-9465-ee09793c2d46",
+    "rx_number": "123456"
   }
 }
 ```
 
-### Medication Request Approved Event Example
+> **Note:** The `rx_number` field is not available for all events.
+
+### Shipment Created Event Example
+
+After a shipment is created, additional fields are included:
 
 ```json
 {
-  "event_type": "medication_request:approved",
-  "event_id": "evt_def456xyz",
-  "timestamp": "2025-01-15T09:00:00.000Z",
-  "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
-  "data": {
-    "medication_request_id": "med_req_11111",
-    "patient_id": "pat_67890",
-    "practitioner_id": "prac_22222",
-    "medication_name": "Testosterone Cypionate",
-    "quantity": 1,
-    "refills": 3,
-    "approved_at": "2025-01-15T09:00:00.000Z"
+  "event_name": "shipment:created",
+  "event_data": {
+    "id": "a7570e3c-4338-485f-9465-ee09793c2d46",
+    "clinic_id": "2a7d8da1-2f69-46e1-87a4-04490ab73c41",
+    "patient_id": "8456ce26-05db-4fcd-bebd-495bd7bc04df",
+    "practitioner_id": "a7570e3c-4338-485f-9465-ee09793c2d46",
+    "rx_number": "123456",
+    "shipping_label": "https://example.com/shipping-label.pdf",
+    "shipment_id": "8456ce26-05db-4fcd-bebd-495bd7bc04df",
+    "shipment_provider": "Ameriship",
+    "tracking_url": "https://example.com/tracking"
+  }
+}
+```
+
+### Practitioner Activated Event Example
+
+```json
+{
+  "event_name": "practitioner:activated",
+  "event_data": {
+    "practitioner_id": "4f407bca-2a9b-4dde-8240-e53331a5a986",
+    "practitioner_name": "Dr. John Smith",
+    "practitioner_email": "dr.smith@clinic.com",
+    "practitioner_phone": "+1-555-0123",
+    "practitioner_npi": "1234567890",
+    "practitioner_status": "active"
   }
 }
 ```
@@ -200,54 +201,81 @@ app.post('/webhooks/novamed', async (req, res) => {
 });
 
 async function processWebhookEvent(payload) {
-  const { event_type, data, event_id } = payload;
+  const { event_name, event_data } = payload;
 
-  // Check for duplicate events
-  if (await isEventProcessed(event_id)) {
-    console.log('Duplicate event, skipping:', event_id);
+  // Check for duplicate events using medication order ID
+  if (event_data.id && await isEventProcessed(event_data.id, event_name)) {
+    console.log('Duplicate event, skipping:', event_name, event_data.id);
     return;
   }
 
-  switch (event_type) {
-    case 'order:shipped':
-      await handleOrderShipped(data);
+  switch (event_name) {
+    case 'medication_order:verified':
+      await handleMedicationOrderVerified(event_data);
       break;
-    case 'order:delivered':
-      await handleOrderDelivered(data);
+    case 'medication_order:submitted':
+      await handleMedicationOrderSubmitted(event_data);
       break;
-    case 'medication_request:approved':
-      await handleMedicationApproved(data);
+    case 'medication_order:acknowledged':
+      await handleMedicationOrderAcknowledged(event_data);
       break;
-    case 'refill:approved':
-      await handleRefillApproved(data);
+    case 'medication_order:filled':
+      await handleMedicationOrderFilled(event_data);
+      break;
+    case 'shipment:created':
+      await handleShipmentCreated(event_data);
+      break;
+    case 'shipment:cancelled':
+      await handleShipmentCancelled(event_data);
+      break;
+    case 'practitioner:activated':
+      await handlePractitionerActivated(event_data);
       break;
     default:
-      console.log('Unknown event:', event_type);
+      console.log('Unknown event:', event_name);
   }
 
   // Mark event as processed
-  await markEventProcessed(event_id);
+  if (event_data.id) {
+    await markEventProcessed(event_data.id, event_name);
+  }
 }
 
-async function handleOrderShipped(data) {
-  console.log('Order shipped:', data.order_id);
-  // Update your system with tracking information
-  // Send notification to patient
+async function handleMedicationOrderVerified(data) {
+  console.log('Medication order verified:', data.id);
+  // Update order status in your system
 }
 
-async function handleOrderDelivered(data) {
-  console.log('Order delivered:', data.order_id);
-  // Update order status in your database
+async function handleMedicationOrderSubmitted(data) {
+  console.log('Medication order submitted:', data.id);
+  // Track submission status
 }
 
-async function handleMedicationApproved(data) {
-  console.log('Medication approved:', data.medication_request_id);
-  // Trigger next steps in your workflow
+async function handleMedicationOrderAcknowledged(data) {
+  console.log('Medication order acknowledged:', data.id);
+  // Update acknowledgment status
 }
 
-async function handleRefillApproved(data) {
-  console.log('Refill approved:', data.refill_id);
-  // Process refill order
+async function handleMedicationOrderFilled(data) {
+  console.log('Medication order filled:', data.id);
+  // Process filled order
+}
+
+async function handleShipmentCreated(data) {
+  console.log('Shipment created:', data.shipment_id);
+  console.log('Tracking URL:', data.tracking_url);
+  // Send tracking information to patient
+}
+
+async function handleShipmentCancelled(data) {
+  console.log('Shipment cancelled:', data.shipment_id);
+  // Handle cancellation
+}
+
+async function handlePractitionerActivated(data) {
+  console.log('Practitioner activated:', data.practitioner_id);
+  console.log('Name:', data.practitioner_name);
+  // Update practitioner status in your system
 }
 
 app.listen(3000, () => {
@@ -281,38 +309,54 @@ def webhook_handler():
     return jsonify({'received': True}), 200
 
 def process_webhook_event(payload):
-    event_type = payload.get('event_type')
-    data = payload.get('data')
-    event_id = payload.get('event_id')
+    event_name = payload.get('event_name')
+    event_data = payload.get('event_data')
     
     handlers = {
-        'order:shipped': handle_order_shipped,
-        'order:delivered': handle_order_delivered,
-        'medication_request:approved': handle_medication_approved,
-        'refill:approved': handle_refill_approved,
+        'medication_order:verified': handle_medication_order_verified,
+        'medication_order:submitted': handle_medication_order_submitted,
+        'medication_order:acknowledged': handle_medication_order_acknowledged,
+        'medication_order:filled': handle_medication_order_filled,
+        'shipment:created': handle_shipment_created,
+        'shipment:cancelled': handle_shipment_cancelled,
+        'practitioner:activated': handle_practitioner_activated,
     }
     
-    handler = handlers.get(event_type)
+    handler = handlers.get(event_name)
     if handler:
-        handler(data)
+        handler(event_data)
     else:
-        print(f'Unknown event: {event_type}')
+        print(f'Unknown event: {event_name}')
 
-def handle_order_shipped(data):
-    print(f"Order shipped: {data.get('order_id')}")
-    # Update your system with tracking information
-
-def handle_order_delivered(data):
-    print(f"Order delivered: {data.get('order_id')}")
+def handle_medication_order_verified(data):
+    print(f"Medication order verified: {data.get('id')}")
     # Update order status
 
-def handle_medication_approved(data):
-    print(f"Medication approved: {data.get('medication_request_id')}")
-    # Trigger workflow
+def handle_medication_order_submitted(data):
+    print(f"Medication order submitted: {data.get('id')}")
+    # Track submission
 
-def handle_refill_approved(data):
-    print(f"Refill approved: {data.get('refill_id')}")
-    # Process refill
+def handle_medication_order_acknowledged(data):
+    print(f"Medication order acknowledged: {data.get('id')}")
+    # Update acknowledgment status
+
+def handle_medication_order_filled(data):
+    print(f"Medication order filled: {data.get('id')}")
+    # Process filled order
+
+def handle_shipment_created(data):
+    print(f"Shipment created: {data.get('shipment_id')}")
+    print(f"Tracking URL: {data.get('tracking_url')}")
+    # Send tracking info to patient
+
+def handle_shipment_cancelled(data):
+    print(f"Shipment cancelled: {data.get('shipment_id')}")
+    # Handle cancellation
+
+def handle_practitioner_activated(data):
+    print(f"Practitioner activated: {data.get('practitioner_id')}")
+    print(f"Name: {data.get('practitioner_name')}")
+    # Update practitioner status
 
 if __name__ == '__main__':
     app.run(port=3000)
@@ -366,17 +410,19 @@ Webhook endpoints **must** use HTTPS. NovaMed will not send webhooks to HTTP end
 
 ### 3. Implement Idempotency
 
-Handle duplicate events gracefully using the `event_id`:
+Handle duplicate events gracefully using the medication order `id` and `event_name`:
 
 ```javascript
 const processedEvents = new Map();
 
-async function isEventProcessed(eventId) {
-  return processedEvents.has(eventId);
+async function isEventProcessed(id, eventName) {
+  const key = `${id}:${eventName}`;
+  return processedEvents.has(key);
 }
 
-async function markEventProcessed(eventId) {
-  processedEvents.set(eventId, Date.now());
+async function markEventProcessed(id, eventName) {
+  const key = `${id}:${eventName}`;
+  processedEvents.set(key, Date.now());
   // Also persist to database for reliability
 }
 ```
@@ -465,8 +511,8 @@ If your endpoint returns a non-200 status code, the webhook will be retried. To 
 
 ### Duplicate Events
 
-- ✅ Implement idempotency checking using `event_id`
-- ✅ Store processed event IDs in database
+- ✅ Implement idempotency checking using `id` and `event_name`
+- ✅ Store processed event keys in database
 
 ### Timeout Errors
 
@@ -482,7 +528,7 @@ If your endpoint returns a non-200 status code, the webhook will be retried. To 
 2. ✅ **Verify API Key** - Always check `x-api-key` header
 3. ✅ **Return 200 OK Quickly** - Within 5 seconds
 4. ✅ **Process Asynchronously** - Don't block the response
-5. ✅ **Implement Idempotency** - Handle duplicate events using `event_id`
+5. ✅ **Implement Idempotency** - Handle duplicate events using `id` and `event_name`
 6. ✅ **Log Everything** - For debugging and monitoring
 7. ✅ **Handle Errors Gracefully** - Don't crash on errors
 
