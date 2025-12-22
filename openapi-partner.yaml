@@ -65,16 +65,18 @@ paths:
               basic:
                 summary: Create a new practitioner
                 value:
-                  first_name: "Sarah"
-                  last_name: "Johnson"
-                  email: "dr.johnson@partnerclinic.com"
-                  phone: "+1-555-0123"
-                  npi_number: "1234567890"
-                  dea_number: "FJ1234563"
-                  license_number: "MD-12345"
-                  license_state: "CA"
-                  signature_image: "base64_encoded_image_string"
-                  assigned_clinic: "550e8400-e29b-41d4-a716-446655440000"
+                  first_name: "John"
+                  last_name: "Doe"
+                  email: "john.doe@example.com"
+                  npi: "1234567890"
+                  is_veterinarian: true
+                  assigned_clinic: "550e8400-e29b-41d4-a716-446655440001"
+                  phone: "1234567890"
+                  address_line_1: "123 Main St"
+                  address_line_2: "Apt 1"
+                  city: "San Antonio"
+                  state_code: "TX"
+                  zip_code: "78201"
       responses:
         '200':
           description: Practitioner created successfully
@@ -126,18 +128,26 @@ paths:
               basic:
                 summary: Create a new patient
                 value:
-                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
                   first_name: "John"
-                  last_name: "Smith"
-                  date_of_birth: "1985-03-15"
+                  middle_name: "Michael"
+                  last_name: "Doe"
                   gender: "male"
-                  email: "john.smith@email.com"
-                  phone: "+1-555-0199"
-                  address_line1: "123 Main Street"
-                  address_line2: "Apt 4B"
-                  city: "San Francisco"
-                  state: "CA"
-                  zip: "94102"
+                  dob: "1985-03-15"
+                  species: "human"
+                  status: "active"
+                  practitioner_id: "550e8400-e29b-41d4-a716-446655440001"
+                  assigned_clinic: "550e8400-e29b-41d4-a716-446655440002"
+                  contacts:
+                    - key: "email"
+                      value: "john.doe@example.com"
+                    - key: "phone"
+                      value: "5551234567"
+                  addresses:
+                    - addressLine1: "123 Main Street"
+                      addressLine2: "Apt 4B"
+                      city: "New York"
+                      state: "NY"
+                      postalCode: "10001"
       responses:
         '200':
           description: Patient created successfully
@@ -189,15 +199,19 @@ paths:
               basic:
                 summary: Create medication request
                 value:
-                  clinic_id: "550e8400-e29b-41d4-a716-446655440000"
-                  patient_id: "770e8400-e29b-41d4-a716-446655440002"
-                  practitioner_id: "660e8400-e29b-41d4-a716-446655440001"
-                  medication_name: "Testosterone Cypionate"
-                  medication_strength: "200mg/ml"
-                  quantity: 1
-                  refills: 3
-                  days_supply: 30
-                  instructions: "Inject 0.5ml (100mg) intramuscularly twice weekly"
+                  patient_id: "550e8400-e29b-41d4-a716-446655440001"
+                  practitioner_id: "550e8400-e29b-41d4-a716-446655440002"
+                  clinic_id: "550e8400-e29b-41d4-a716-446655440003"
+                  delivery_speed: "next-day"
+                  is_refrigerated: true
+                  medication_requests:
+                    - medication: "Testosterone Cypionate"
+                      dose: "200mg/ml"
+                      unit_of_measure: "mg"
+                      quantity: 1
+                      refills: "3"
+                      direction: "Inject 0.5ml (100mg) intramuscularly twice weekly"
+                      days_supply: 30
       responses:
         '200':
           description: Medication request created successfully
@@ -420,161 +434,311 @@ components:
         - first_name
         - last_name
         - email
-        - npi_number
+        - npi
+        - is_veterinarian
         - assigned_clinic
+        - address_line_1
+        - city
+        - state_code
+        - zip_code
       properties:
         first_name:
           type: string
-          description: Practitioner's first name
-          example: "Sarah"
+          minLength: 2
+          description: Practitioner's first name (minimum 2 characters)
+          example: "John"
         last_name:
           type: string
-          description: Practitioner's last name
-          example: "Johnson"
+          minLength: 2
+          description: Practitioner's last name (minimum 2 characters)
+          example: "Doe"
         email:
           type: string
           format: email
-          description: Practitioner's email address
-          example: "dr.johnson@partnerclinic.com"
-        phone:
+          description: Practitioner's email
+          example: "john.doe@example.com"
+        npi:
           type: string
-          description: Practitioner's phone number
-          example: "+1-555-0123"
-        npi_number:
-          type: string
-          description: National Provider Identifier (10 digits)
+          description: Practitioner's NPI number
           example: "1234567890"
-        dea_number:
-          type: string
-          description: DEA registration number
-          example: "FJ1234563"
-        license_number:
-          type: string
-          description: State medical license number
-          example: "MD-12345"
-        license_state:
-          type: string
-          description: State of licensure (2-letter code)
-          example: "CA"
-        signature_image:
-          type: string
-          description: Base64 encoded signature image
+        is_veterinarian:
+          type: boolean
+          description: Whether the practitioner is a veterinarian
+          example: true
         assigned_clinic:
           type: string
           format: uuid
-          description: UUID of the clinic to assign this practitioner
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: ID of the assigned clinic
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        phone:
+          type: string
+          description: Practitioner's phone number
+          example: "1234567890"
+        address_line_1:
+          type: string
+          description: Practitioner's address line 1
+          example: "123 Main St"
+        address_line_2:
+          type: string
+          description: Practitioner's address line 2
+          example: "Apt 1"
+        city:
+          type: string
+          description: Practitioner's city
+          example: "San Antonio"
+        state_code:
+          type: string
+          description: Practitioner's state code
+          example: "TX"
+        zip_code:
+          type: string
+          description: Practitioner's zip code
+          example: "78201"
 
     PatientRequest:
       type: object
       required:
-        - clinic_id
         - first_name
         - last_name
-        - date_of_birth
-        - email
+        - gender
+        - dob
+        - practitioner_id
+        - assigned_clinic
+        - addresses
       properties:
-        clinic_id:
-          type: string
-          format: uuid
-          description: UUID of the clinic
-          example: "550e8400-e29b-41d4-a716-446655440000"
         first_name:
           type: string
-          description: Patient's first name
+          minLength: 2
+          description: Patient's first name (minimum 2 characters)
           example: "John"
+        middle_name:
+          type: string
+          nullable: true
+          description: Patient's middle name (optional)
+          example: "Michael"
         last_name:
           type: string
           description: Patient's last name
-          example: "Smith"
-        date_of_birth:
-          type: string
-          format: date
-          description: Patient's date of birth (YYYY-MM-DD)
-          example: "1985-03-15"
+          example: "Doe"
         gender:
           type: string
-          enum: [male, female, other]
+          nullable: true
+          enum: [male, female, other, unknown]
           description: Patient's gender
           example: "male"
-        email:
+        dob:
           type: string
-          format: email
-          description: Patient's email address
-          example: "john.smith@email.com"
-        phone:
+          description: Patient's date of birth
+          example: "2025-07-13T18:30:00.000Z"
+        species:
           type: string
-          description: Patient's phone number
-          example: "+1-555-0199"
-        address_line1:
+          nullable: true
+          enum: [human, canine, feline, equine, avian, mammal - other, reptilian, swine]
+          description: Patient's species (for veterinary use)
+          example: "human"
+        animal_owner_name:
           type: string
-          description: Street address line 1
-          example: "123 Main Street"
-        address_line2:
+          nullable: true
+          description: Animal owner's name (for veterinary use)
+          example: "Jane Smith"
+        weight:
           type: string
-          description: Street address line 2 (optional)
-          example: "Apt 4B"
-        city:
+          nullable: true
+          description: Patient's weight
+          example: "70.5"
+        weight_recorded_date:
           type: string
-          description: City
-          example: "San Francisco"
-        state:
+          nullable: true
+          description: Date when weight was recorded
+          example: "2024-01-15"
+        status:
           type: string
-          description: State (2-letter code)
-          example: "CA"
-        zip:
+          nullable: true
+          enum: [active, inactive]
+          description: Patient's status
+          example: "active"
+        practitioner_id:
           type: string
-          description: ZIP/Postal code
-          example: "94102"
+          format: uuid
+          description: ID of the assigned practitioner
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        assigned_clinic:
+          type: string
+          format: uuid
+          description: ID of the assigned clinic
+          example: "550e8400-e29b-41d4-a716-446655440002"
+        contacts:
+          type: array
+          description: Array of contact information
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                enum: [email, phone, url, sms, fax]
+                description: Contact type (email, phone, url, etc.)
+                example: "email"
+              value:
+                type: string
+                description: Contact value (validated based on key type)
+                example: "john.doe@example.com"
+          example:
+            - key: "email"
+              value: "john.doe@example.com"
+            - key: "phone"
+              value: "5551234567"
+        addresses:
+          type: array
+          description: Array of patient addresses (currently only supports single address)
+          items:
+            type: object
+            required:
+              - addressLine1
+              - city
+              - state
+              - postalCode
+            properties:
+              addressLine1:
+                type: string
+                nullable: true
+                description: First line of address
+                example: "123 Main Street"
+              addressLine2:
+                type: string
+                nullable: true
+                description: Second line of address
+                example: "Apt 4B"
+              addressLine3:
+                type: string
+                nullable: true
+                description: Third line of address
+                example: "Building C"
+              city:
+                type: string
+                nullable: true
+                description: City name
+                example: "New York"
+              state:
+                type: string
+                nullable: true
+                description: State or province
+                example: "NY"
+              postalCode:
+                type: string
+                nullable: true
+                description: Postal/ZIP code
+                example: "10001"
+          example:
+            - addressLine1: "123 Main Street"
+              addressLine2: "Apt 4B"
+              city: "New York"
+              state: "NY"
+              postalCode: "10001"
 
     MedicationRequest:
       type: object
       required:
-        - clinic_id
         - patient_id
         - practitioner_id
-        - medication_name
-        - quantity
+        - clinic_id
+        - delivery_speed
+        - medication_requests
       properties:
-        clinic_id:
-          type: string
-          format: uuid
-          description: UUID of the clinic
-          example: "550e8400-e29b-41d4-a716-446655440000"
         patient_id:
           type: string
           format: uuid
-          description: UUID of the patient
-          example: "770e8400-e29b-41d4-a716-446655440002"
+          description: ID of the patient
+          example: "550e8400-e29b-41d4-a716-446655440001"
         practitioner_id:
           type: string
           format: uuid
-          description: UUID of the prescribing practitioner
-          example: "660e8400-e29b-41d4-a716-446655440001"
-        medication_name:
+          description: ID of the practitioner
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        clinic_id:
           type: string
-          description: Name of the medication
-          example: "Testosterone Cypionate"
-        medication_strength:
+          format: uuid
+          description: ID of the clinic
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        delivery_speed:
           type: string
-          description: Medication strength/concentration
-          example: "200mg/ml"
-        quantity:
-          type: integer
-          description: Quantity to dispense
-          example: 1
-        refills:
-          type: integer
-          description: Number of refills authorized
-          example: 3
-        days_supply:
-          type: integer
-          description: Days supply per fill
-          example: 30
-        instructions:
+          enum: [next-day, business-day]
+          description: Delivery speed
+          example: "next-day"
+        is_refrigerated:
+          type: boolean
+          description: Is refrigerated
+          example: true
+        shipment_group_id:
           type: string
-          description: Dosing instructions for the patient
-          example: "Inject 0.5ml (100mg) intramuscularly twice weekly"
+          description: Shipment group ID
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        medication_requests:
+          type: array
+          description: Array of medication requests
+          items:
+            type: object
+            required:
+              - medication
+              - dose
+              - quantity
+              - direction
+            properties:
+              medication:
+                type: string
+                description: Name of the medication
+                example: "Aspirin"
+              dose:
+                type: string
+                description: Dose of the medication
+                example: "100mg"
+              unit_of_measure:
+                type: string
+                description: Unit of measure (recommended). If omitted, NovaMed will attempt to derive this from the dose string (e.g. "0.25 mg" -> "mg").
+                example: "mg"
+              quantity:
+                type: number
+                description: Quantity of the medication
+                example: 100
+              refills:
+                type: string
+                description: Number of refills
+                example: "3"
+              direction:
+                type: string
+                description: Direction of the medication
+                example: "Take 1 tablet by mouth daily"
+              days_supply:
+                type: number
+                description: Days supply
+                example: 30
+              flavor:
+                type: string
+                description: Flavor of the medication
+                example: "Orange"
+              notes:
+                type: string
+                description: Notes for the medication
+                example: "Patient has a history of allergies"
+              do_not_refill:
+                type: boolean
+                description: Do not refill
+                example: true
+              do_not_fill:
+                type: boolean
+                description: Do not fill
+                example: true
+              patient_contact_requested:
+                type: boolean
+                description: Patient contact requested
+                example: true
+              reason_for_compounding:
+                type: string
+                description: Reason for compounding
+                example: "Patient has a history of allergies"
+              reason_for_compounding_additional_context:
+                type: string
+                description: Additional context for reason for compounding
+                example: "Patient has a history of allergies"
 
     RefillRequest:
       type: object
