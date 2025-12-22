@@ -50,20 +50,18 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/prac
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
-    "npi_number": "1234567890",
-    "first_name": "Sarah",
-    "last_name": "Johnson",
-    "email": "dr.johnson@partnerclinic.com",
-    "phone": "+1-555-0123",
-    "credentials": "MD",
-    "specialty": "Internal Medicine",
-    "license_number": "MD-12345",
-    "license_state": "CA",
-    "license_expiration": "2026-12-31",
-    "dea_number": "FJ1234563",
-    "dea_expiration": "2026-06-30",
-    "signature_image": "base64_encoded_image_string",
-    "assigned_clinic": "550e8400-e29b-41d4-a716-446655440000"
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "npi": "1234567890",
+    "is_veterinarian": true,
+    "assigned_clinic": "550e8400-e29b-41d4-a716-446655440001",
+    "phone": "1234567890",
+    "address_line_1": "123 Main St",
+    "address_line_2": "Apt 1",
+    "city": "San Antonio",
+    "state_code": "TX",
+    "zip_code": "78201"
   }'
 ```
 
@@ -86,20 +84,28 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/pati
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
-    "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
     "first_name": "John",
-    "last_name": "Smith",
-    "date_of_birth": "1985-03-15",
+    "middle_name": "Michael",
+    "last_name": "Doe",
     "gender": "male",
-    "email": "john.smith@email.com",
-    "phone": "+1-555-0199",
-    "address": {
-      "line1": "123 Main Street",
-      "city": "San Francisco",
-      "state": "CA",
-      "zip": "94102",
-      "country": "US"
-    }
+    "dob": "1985-03-15",
+    "species": "human",
+    "status": "active",
+    "practitioner_id": "550e8400-e29b-41d4-a716-446655440001",
+    "assigned_clinic": "550e8400-e29b-41d4-a716-446655440002",
+    "contacts": [
+      { "key": "email", "value": "john.doe@example.com" },
+      { "key": "phone", "value": "5551234567" }
+    ],
+    "addresses": [
+      {
+        "addressLine1": "123 Main Street",
+        "addressLine2": "Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10001"
+      }
+    ]
   }'
 ```
 
@@ -122,15 +128,22 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medi
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
-    "clinic_id": "550e8400-e29b-41d4-a716-446655440000",
-    "patient_id": "660e8400-e29b-41d4-a716-446655440001",
-    "practitioner_id": "770e8400-e29b-41d4-a716-446655440002",
-    "medication_id": "880e8400-e29b-41d4-a716-446655440003",
-    "quantity": 1,
-    "refills": 3,
-    "days_supply": 30,
-    "instructions": "Inject 0.5ml (100mg) intramuscularly twice weekly",
-    "diagnosis_codes": ["E29.1"]
+    "patient_id": "550e8400-e29b-41d4-a716-446655440001",
+    "practitioner_id": "550e8400-e29b-41d4-a716-446655440002",
+    "clinic_id": "550e8400-e29b-41d4-a716-446655440003",
+    "delivery_speed": "next-day",
+    "is_refrigerated": true,
+    "medication_requests": [
+      {
+        "medication": "Testosterone Cypionate",
+        "dose": "200mg/ml",
+        "unit_of_measure": "mg",
+        "quantity": 1,
+        "refills": "3",
+        "direction": "Inject 0.5ml (100mg) intramuscularly twice weekly",
+        "days_supply": 30
+      }
+    ]
   }'
 ```
 
