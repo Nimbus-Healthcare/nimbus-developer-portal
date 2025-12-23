@@ -104,6 +104,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
 
   /api/external/patient:
     post:
@@ -175,6 +179,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
 
   /api/external/medication-order:
     post:
@@ -239,6 +247,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
         '404':
           description: Patient or practitioner not found
           content:
@@ -319,6 +331,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
 
   /api/external/webhook:
     post:
@@ -374,6 +390,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
 
     delete:
       tags:
@@ -411,6 +431,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
         '404':
           description: Webhook not found
           content:
