@@ -98,7 +98,7 @@ The response includes the created patient:
 Now create a medication request for the patient:
 
 ```bash
-curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-request \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-order \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
