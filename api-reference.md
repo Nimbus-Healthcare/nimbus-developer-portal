@@ -119,12 +119,12 @@ Create medication orders for patients.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/external/medication-request` | Create a new medication request |
+| `POST` | `/api/external/medication-order` | Create a new medication request |
 
 ### Create Medication Request
 
 ```bash
-curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-request \
+curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medication-order \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
