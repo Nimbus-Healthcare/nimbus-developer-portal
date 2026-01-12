@@ -103,15 +103,21 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medi
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -d '{
-    "clinic_id": "your-clinic-id-here",
     "patient_id": "770e8400-e29b-41d4-a716-446655440002",
     "practitioner_id": "660e8400-e29b-41d4-a716-446655440001",
-    "medication_name": "Testosterone Cypionate",
-    "medication_strength": "200mg/ml",
-    "quantity": 1,
-    "refills": 3,
-    "days_supply": 30,
-    "instructions": "Inject 0.5ml intramuscularly twice weekly"
+    "clinic_id": "your-clinic-id-here",
+    "carrier_id": "se-3818360",
+    "service_id": "fedex_ground",
+    "medication_requests": [
+      {
+        "medication": "Testosterone Cypionate",
+        "dose": "200mg/ml",
+        "quantity": 1,
+        "refills": "3",
+        "direction": "Inject 0.5ml intramuscularly twice weekly",
+        "days_supply": 30
+      }
+    ]
   }'
 ```
 

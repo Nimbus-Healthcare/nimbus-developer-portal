@@ -131,7 +131,8 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medi
     "patient_id": "550e8400-e29b-41d4-a716-446655440001",
     "practitioner_id": "550e8400-e29b-41d4-a716-446655440002",
     "clinic_id": "550e8400-e29b-41d4-a716-446655440003",
-    "delivery_speed": "next-day",
+    "carrier_id": "se-3818360",
+    "service_id": "fedex_ground",
     "is_refrigerated": true,
     "medication_requests": [
       {
@@ -181,6 +182,118 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/refi
 ```
 
 [View full Refill documentation →](/openapi-partner/refills)
+
+---
+
+## Carriers
+
+Retrieve available shipment carriers and their services.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/external/carriers` | Get list of available carriers |
+| `GET` | `/api/external/carriers/{carrierId}/services` | Get carrier services for a patient |
+
+### Get Carriers
+
+```bash
+curl -X GET https://novamed-feapidev.nimbushealthcaretest.com/api/external/carriers \
+  -H "x-api-key: your-api-key-here" \
+  -H "Accept: application/json"
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "carriers": [
+      {
+        "id": "ameriship",
+        "name": "Ameriship"
+      },
+      {
+        "id": "se-3818360",
+        "name": "FedEx"
+      },
+      {
+        "id": "se-11225",
+        "name": "Stamps.com"
+      },
+      {
+        "id": "se-11226",
+        "name": "UPS"
+      }
+    ]
+  }
+}
+```
+
+### Get Carrier Services
+
+Get available shipping services for a specific carrier based on the patient's location.
+
+```bash
+curl -X GET "https://novamed-feapidev.nimbushealthcaretest.com/api/external/carriers/se-3818360/services?patientId=01aabf3a-51cd-4180-be17-8ac9446e9ace" \
+  -H "x-api-key: your-api-key-here" \
+  -H "Accept: application/json"
+```
+
+**Response (Free Shipping)**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "fedex_ground",
+      "name": "FedEx Ground®",
+      "totalCost": 0,
+      "originalCost": 32.44
+    },
+    {
+      "id": "fedex_2day",
+      "name": "FedEx 2Day®",
+      "totalCost": 0,
+      "originalCost": 56.43
+    },
+    {
+      "id": "fedex_priority_overnight",
+      "name": "FedEx Priority Overnight®",
+      "totalCost": 0,
+      "originalCost": 118.10
+    }
+  ],
+  "isFreeShipment": true,
+  "freeShipmentType": "clinic_specific",
+  "patientState": "Alabama"
+}
+```
+
+**Response (Paid Shipping)**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "fedex_ground",
+      "name": "FedEx Ground®",
+      "totalCost": 32.44,
+      "originalCost": 32.44
+    },
+    {
+      "id": "fedex_2day",
+      "name": "FedEx 2Day®",
+      "totalCost": 56.43,
+      "originalCost": 56.43
+    }
+  ],
+  "isFreeShipment": false,
+  "freeShipmentType": null,
+  "patientState": "California"
+}
+```
+
+[View full Carriers documentation →](/openapi-partner/carriers)
 
 ---
 
@@ -274,6 +387,7 @@ For interactive API documentation with "Try it" functionality, explore the OpenA
 - [Patients](/openapi-partner/patients)
 - [Medication Requests](/openapi-partner/medication-requests)
 - [Refills](/openapi-partner/refills)
+- [Carriers](/openapi-partner/carriers)
 - [Webhooks](/openapi-partner/webhooks)
 
 ## External Resources

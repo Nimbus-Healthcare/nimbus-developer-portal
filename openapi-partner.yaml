@@ -38,6 +38,8 @@ tags:
     description: Medication order management
   - name: Refills
     description: Prescription refill request management
+  - name: Carriers
+    description: Retrieve available shipment carriers
   - name: Webhooks
     description: Webhook configuration for receiving event notifications
 
@@ -210,7 +212,8 @@ paths:
                   patient_id: "550e8400-e29b-41d4-a716-446655440001"
                   practitioner_id: "550e8400-e29b-41d4-a716-446655440002"
                   clinic_id: "550e8400-e29b-41d4-a716-446655440003"
-                  delivery_speed: "next-day"
+                  carrier_id: "se-3818360"
+                  service_id: "fedex_ground"
                   is_refrigerated: true
                   medication_requests:
                     - medication: "Testosterone Cypionate"
@@ -325,6 +328,137 @@ paths:
                     success: false
                     error:
                       message: "Refill request already exists"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
+
+  /api/external/carriers:
+    get:
+      tags:
+        - Carriers
+      summary: Get Carriers
+      description: |
+        Retrieve a list of available shipment carriers.
+        
+        Use this endpoint to get the list of carriers that can be used for shipping medication orders.
+      operationId: getCarriers
+      responses:
+        '200':
+          description: List of available carriers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarriersResponse'
+              example:
+                success: true
+                data:
+                  carriers:
+                    - id: "ameriship"
+                      name: "Ameriship"
+                    - id: "se-3818360"
+                      name: "FedEx"
+                    - id: "se-11225"
+                      name: "Stamps.com"
+                    - id: "se-11226"
+                      name: "UPS"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Unauthorized"
+
+  /api/external/carriers/{carrierId}/services:
+    get:
+      tags:
+        - Carriers
+      summary: Get Carrier Services
+      description: |
+        Retrieve available shipping services for a specific carrier based on the patient's location.
+        
+        This endpoint returns pricing information for each available service, including whether free shipping applies.
+      operationId: getCarrierServices
+      parameters:
+        - name: carrierId
+          in: path
+          required: true
+          description: The carrier ID (e.g., "se-3818360" for FedEx)
+          schema:
+            type: string
+            example: "se-3818360"
+        - name: patientId
+          in: query
+          required: true
+          description: The patient's UUID to determine shipping location and eligibility
+          schema:
+            type: string
+            format: uuid
+            example: "01aabf3a-51cd-4180-be17-8ac9446e9ace"
+      responses:
+        '200':
+          description: List of available shipping services
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierServicesResponse'
+              examples:
+                freeShipping:
+                  summary: Free shipping available
+                  value:
+                    success: true
+                    data:
+                      - id: "fedex_ground"
+                        name: "FedEx Ground®"
+                        totalCost: 0
+                        originalCost: 32.44
+                      - id: "fedex_2day"
+                        name: "FedEx 2Day®"
+                        totalCost: 0
+                        originalCost: 56.43
+                      - id: "fedex_priority_overnight"
+                        name: "FedEx Priority Overnight®"
+                        totalCost: 0
+                        originalCost: 118.10
+                    isFreeShipment: true
+                    freeShipmentType: "clinic_specific"
+                    patientState: "Alabama"
+                paidShipping:
+                  summary: Paid shipping
+                  value:
+                    success: true
+                    data:
+                      - id: "fedex_ground"
+                        name: "FedEx Ground®"
+                        totalCost: 32.44
+                        originalCost: 32.44
+                      - id: "fedex_2day"
+                        name: "FedEx 2Day®"
+                        totalCost: 56.43
+                        originalCost: 56.43
+                    isFreeShipment: false
+                    freeShipmentType: null
+                    patientState: "California"
+        '400':
+          description: Service not available for this carrier/patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  message: "Service not available"
         '401':
           description: Unauthorized
           content:
@@ -665,7 +799,8 @@ components:
         - patient_id
         - practitioner_id
         - clinic_id
-        - delivery_speed
+        - carrier_id
+        - service_id
         - medication_requests
       properties:
         patient_id:
@@ -683,11 +818,14 @@ components:
           format: uuid
           description: ID of the clinic
           example: "550e8400-e29b-41d4-a716-446655440001"
-        delivery_speed:
+        carrier_id:
           type: string
-          enum: [next-day, business-day]
-          description: Delivery speed
-          example: "next-day"
+          description: ID of the shipping carrier (from GET /api/external/carriers)
+          example: "se-3818360"
+        service_id:
+          type: string
+          description: ID of the shipping service (from GET /api/external/carriers/{carrierId}/services)
+          example: "fedex_ground"
         is_refrigerated:
           type: boolean
           description: Is refrigerated
@@ -873,6 +1011,72 @@ components:
               format: uuid
               description: Unique identifier for the new medication order
               example: "aa0e8400-e29b-41d4-a716-446655440005"
+
+    CarriersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            carriers:
+              type: array
+              description: List of available shipment carriers
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the carrier
+                    example: "ameriship"
+                  name:
+                    type: string
+                    description: Display name of the carrier
+                    example: "Ameriship"
+
+    CarrierServicesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          description: List of available shipping services
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Unique identifier for the service
+                example: "fedex_ground"
+              name:
+                type: string
+                description: Display name of the service
+                example: "FedEx Ground®"
+              totalCost:
+                type: number
+                description: Cost to charge (0 if free shipping applies)
+                example: 0
+              originalCost:
+                type: number
+                description: Original cost before any discounts
+                example: 32.44
+        isFreeShipment:
+          type: boolean
+          description: Whether free shipping applies for this patient
+          example: true
+        freeShipmentType:
+          type: string
+          nullable: true
+          description: Type of free shipment (e.g., "clinic_specific") or null if not free
+          example: "clinic_specific"
+        patientState:
+          type: string
+          description: The patient's state used for shipping calculation
+          example: "Alabama"
 
     WebhookResponse:
       type: object
