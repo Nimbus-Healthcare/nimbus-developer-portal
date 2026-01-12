@@ -212,7 +212,8 @@ paths:
                   patient_id: "550e8400-e29b-41d4-a716-446655440001"
                   practitioner_id: "550e8400-e29b-41d4-a716-446655440002"
                   clinic_id: "550e8400-e29b-41d4-a716-446655440003"
-                  delivery_speed: "next-day"
+                  carrier_id: "se-3818360"
+                  service_id: "fedex_ground"
                   is_refrigerated: true
                   medication_requests:
                     - medication: "Testosterone Cypionate"
@@ -798,7 +799,8 @@ components:
         - patient_id
         - practitioner_id
         - clinic_id
-        - delivery_speed
+        - carrier_id
+        - service_id
         - medication_requests
       properties:
         patient_id:
@@ -816,11 +818,14 @@ components:
           format: uuid
           description: ID of the clinic
           example: "550e8400-e29b-41d4-a716-446655440001"
-        delivery_speed:
+        carrier_id:
           type: string
-          enum: [next-day, business-day]
-          description: Delivery speed
-          example: "next-day"
+          description: ID of the shipping carrier (from GET /api/external/carriers)
+          example: "se-3818360"
+        service_id:
+          type: string
+          description: ID of the shipping service (from GET /api/external/carriers/{carrierId}/services)
+          example: "fedex_ground"
         is_refrigerated:
           type: boolean
           description: Is refrigerated

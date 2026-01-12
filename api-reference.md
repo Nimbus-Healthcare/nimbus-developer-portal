@@ -131,7 +131,8 @@ curl -X POST https://novamed-feapidev.nimbushealthcaretest.com/api/external/medi
     "patient_id": "550e8400-e29b-41d4-a716-446655440001",
     "practitioner_id": "550e8400-e29b-41d4-a716-446655440002",
     "clinic_id": "550e8400-e29b-41d4-a716-446655440003",
-    "delivery_speed": "next-day",
+    "carrier_id": "se-3818360",
+    "service_id": "fedex_ground",
     "is_refrigerated": true,
     "medication_requests": [
       {
